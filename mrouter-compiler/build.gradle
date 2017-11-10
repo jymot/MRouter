@@ -5,7 +5,7 @@ dependencies {
     implementation 'com.google.auto.service:auto-service:1.0-rc2'
     implementation 'com.google.auto:auto-common:0.6'
     implementation 'com.squareup:javapoet:1.9.0'
-    implementation project(':mrouter-annotaions')
+    implementation project(':mrouter-annotations')
 }
 
 sourceCompatibility = rootProject.ext.sourceCompatibilityVersion
