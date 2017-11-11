@@ -11,13 +11,13 @@ import java.util.Set;
  * <p>Date         : 2017/11/10.</p>
  * <p>Time         : 上午10:41.</p>
  */
-public final class Route {
+public final class RouteIntent {
 
     private final Uri mUri;
     private final Bundle mBundle;
     private final int mFlags;
 
-    private Route(Builder builder){
+    private RouteIntent(Builder builder){
         mUri = builder.mUri;
         mBundle = builder.mBundle;
         mFlags = builder.mFlags;
@@ -49,7 +49,7 @@ public final class Route {
             mFlags = -1;
         }
 
-        private Builder(Route route){
+        private Builder(RouteIntent route){
             mUri = route.mUri;
             mBundle = route.mBundle;
             mFlags = route.mFlags;
@@ -114,7 +114,7 @@ public final class Route {
             return this;
         }
 
-        public Route build(){
+        public RouteIntent build(){
             if (mUri == null) throw new NullPointerException("Route.Builder mUri can not be null.");
             if (mBundle == null) throw new NullPointerException("Route.Builder mBundle can not be null.");
 
@@ -123,7 +123,7 @@ public final class Route {
                 mBundle.putString(key, mUri.getQueryParameter(key));
             }
 
-            return new Route(this);
+            return new RouteIntent(this);
         }
     }
 }

@@ -27,19 +27,19 @@ public class Router {
         return sRouter;
     }
 
-    public void push(Context context, Route route){
+    public void push(Context context, RouteIntent route){
         push(context, route, -1);
     }
 
-    public void push(Context context, Route route, int requestCode){
+    public void push(Context context, RouteIntent route, int requestCode){
         RouterServiceCenter.getRouterService(RouterServiceCenter.NAME).push(context, route, requestCode);
     }
 
-    public void pop(Context context, Route route){
+    public void pop(Context context, RouteIntent route){
         pop(context, route, -1);
     }
 
-    public void pop(Context context, Route route, int resultCode){
+    public void pop(Context context, RouteIntent route, int resultCode){
         RouterServiceCenter.getRouterService(RouterServiceCenter.NAME).pop(context, route, resultCode);
     }
 

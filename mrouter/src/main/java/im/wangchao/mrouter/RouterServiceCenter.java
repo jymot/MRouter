@@ -63,7 +63,7 @@ public class RouterServiceCenter implements IRouterService {
         list.add(interceptor);
     }
 
-    @Override public void push(Context context, Route route, int requestCode) {
+    @Override public void push(Context context, RouteIntent route, int requestCode) {
         List<IInterceptor> globalInterceptors = mInterceptors.get(NAME);
         route = pushProceed(globalInterceptors, context, route, requestCode);
 
@@ -92,11 +92,11 @@ public class RouterServiceCenter implements IRouterService {
         }
     }
 
-    @Override public void pop(Context context, Route route, int resultCode) {
+    @Override public void pop(Context context, RouteIntent route, int resultCode) {
 
     }
 
-    private boolean pushServiceProceed(String name, Context context, Route route, int requestCode){
+    private boolean pushServiceProceed(String name, Context context, RouteIntent route, int requestCode){
         IRouterService service = mRouterServices.get(name);
         if (service == null){
             return false;
@@ -109,10 +109,10 @@ public class RouterServiceCenter implements IRouterService {
         return true;
     }
 
-    private Route pushProceed(List<IInterceptor> interceptors, Context context, Route route, int requestCode){
+    private RouteIntent pushProceed(List<IInterceptor> interceptors, Context context, RouteIntent route, int requestCode){
         if (!isListEmpty(interceptors)){
             for (IInterceptor interceptor: interceptors){
-                Route temp = interceptor.pushProceed(context, route, requestCode);
+                RouteIntent temp = interceptor.pushProceed(context, route, requestCode);
                 if (temp != null){
                     route = temp;
                 }

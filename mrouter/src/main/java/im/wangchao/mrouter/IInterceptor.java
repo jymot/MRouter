@@ -10,8 +10,8 @@ import android.content.Context;
  */
 public interface IInterceptor {
 
-    Route pushProceed(Context context, Route route, int requestCode);
+    RouteIntent pushProceed(Context context, RouteIntent route, int requestCode);
 
-    Route popProceed(Context context, Route route, int resultCode);
+    RouteIntent popProceed(Context context, RouteIntent route, int resultCode);
 
 }
