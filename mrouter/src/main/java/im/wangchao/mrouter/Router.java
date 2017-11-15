@@ -27,12 +27,16 @@ public class Router {
         return sRouter;
     }
 
+    public static void init(){
+
+    }
+
     public void push(Context context, RouteIntent route){
         push(context, route, -1);
     }
 
     public void push(Context context, RouteIntent route, int requestCode){
-        RouterServiceCenter.getRouterService(RouterServiceCenter.NAME).push(context, route, requestCode);
+        RouterServiceCenter.instance().push(context, route, requestCode);
     }
 
     public void pop(Context context, RouteIntent route){
@@ -40,7 +44,7 @@ public class Router {
     }
 
     public void pop(Context context, RouteIntent route, int resultCode){
-        RouterServiceCenter.getRouterService(RouterServiceCenter.NAME).pop(context, route, resultCode);
+        RouterServiceCenter.instance().pop(context, route, resultCode);
     }
 
 

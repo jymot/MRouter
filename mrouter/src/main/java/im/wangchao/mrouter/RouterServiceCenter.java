@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.text.TextUtils;
 
@@ -25,13 +26,19 @@ import static im.wangchao.mrouter.RouterServiceCenter.NAME;
  */
 @RouterService(NAME)
 public class RouterServiceCenter implements IRouterService {
-    public static final String NAME = "RouterServiceCenter";
+    static final String NAME = "RouterServiceCenter";
 
-    private static Map<String, IRouterService> mRouterServices = new HashMap<>();
-    private static Map<String, List<IInterceptor>> mInterceptors = new HashMap<>();
+    private static Map<String, IRouterService> sRouterServices = new HashMap<>();
+    private static Map<String, List<IInterceptor>> sInterceptors = new HashMap<>();
 
-    static IRouterService getRouterService(String name){
-        return mRouterServices.get(name);
+    private ILoader mLoader;
+
+    public RouterServiceCenter(ILoader loader){
+        this.mLoader = loader;
+    }
+
+    static IRouterService instance(){
+        return sRouterServices.get(NAME);
     }
 
     public synchronized static void addRouterService(String name, IRouterService service){
@@ -47,7 +54,7 @@ public class RouterServiceCenter implements IRouterService {
     }
 
     private synchronized static void addRouterServiceImpl(@NonNull String name, IRouterService service){
-        mRouterServices.put(name, service);
+        sRouterServices.put(name, service);
     }
 
     private synchronized static void addInterceptorImpl(String name, IInterceptor interceptor){
@@ -55,40 +62,39 @@ public class RouterServiceCenter implements IRouterService {
             name = NAME;
         }
 
-        List<IInterceptor> list = mInterceptors.get(name);
+        List<IInterceptor> list = sInterceptors.get(name);
         if (list == null) {
             list = new ArrayList<>();
-            mInterceptors.put(name, list);
+            sInterceptors.put(name, list);
         }
         list.add(interceptor);
     }
 
     @Override public void push(Context context, RouteIntent route, int requestCode) {
-        List<IInterceptor> globalInterceptors = mInterceptors.get(NAME);
-        route = pushProceed(globalInterceptors, context, route, requestCode);
-
-        Uri uri = route.uri();
+        final Uri uri = route.uri();
+        // Scheme is RouterService name.
         final String scheme = uri.getScheme();
-        if (pushServiceProceed(scheme, context, route, requestCode)){
-            return;
+        final String path = uri.getPath();
+
+        // Load target class
+        route = route.newBuilder().targetClass(mLoader.getTargetClass(scheme, path)).build();
+
+        // Global interceptor.
+        route = pushProceed(getInterceptors(NAME), context, route, requestCode);
+
+        if (!TextUtils.equals(scheme, NAME)){
+            // exec other RouterService
+            if (pushServiceProceed(scheme, context, route, requestCode)){
+                return;
+            }
         }
 
-        // todo
-//        ComponentName componentName = new ComponentName(context, Routes.get(path));
-        Intent intent = new Intent();
-//        intent.setComponent(componentName);
-        // Set flags.
-        int flags = route.flags();
-        if (-1 != flags) {
-            intent.setFlags(flags);
-        } else if (!(context instanceof Activity)) {
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        }
+        Intent intent = route.getIntent(context);
 
         if (requestCode > 0) {
-            ActivityCompat.startActivityForResult((Activity) context, intent, requestCode, route.bundle());
+            ActivityCompat.startActivityForResult((Activity) context, intent, requestCode, null);
         } else {
-            ActivityCompat.startActivity(context, intent, route.bundle());
+            ActivityCompat.startActivity(context, intent, null);
         }
     }
 
@@ -96,13 +102,30 @@ public class RouterServiceCenter implements IRouterService {
 
     }
 
+    @Nullable private List<IInterceptor> getInterceptors(String name){
+        List<IInterceptor> interceptors = sInterceptors.get(name);
+        if (interceptors == null){
+            interceptors = mLoader.loadInterceptor(name, sInterceptors);
+        }
+        return interceptors;
+    }
+
+    @Nullable private IRouterService getRouterService(String name){
+        IRouterService service = sRouterServices.get(name);
+        if (service == null){
+            service = mLoader.loadRouterService(name, sRouterServices);
+        }
+        return service;
+    }
+
     private boolean pushServiceProceed(String name, Context context, RouteIntent route, int requestCode){
-        IRouterService service = mRouterServices.get(name);
+        IRouterService service = getRouterService(name);
         if (service == null){
             return false;
         }
 
-        List<IInterceptor> interceptors = mInterceptors.get(NAME);
+        // current
+        List<IInterceptor> interceptors = getInterceptors(name);
         route = pushProceed(interceptors, context, route, requestCode);
         service.push(context, route, requestCode);
 

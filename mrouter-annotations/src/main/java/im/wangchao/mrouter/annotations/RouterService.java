@@ -15,5 +15,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.CLASS)
 public @interface RouterService {
 
+    /**
+     * RouterService name，eg. Scheme://Authority/Path, scheme is name.
+     */
     String value();
 }
