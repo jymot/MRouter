@@ -9,6 +9,8 @@ import android.os.Bundle;
 
 import java.util.Set;
 
+import im.wangchao.mrouter.annotations.Constants;
+
 /**
  * <p>Description  : Route.</p>
  * <p>Author       : wangchao.</p>
@@ -16,11 +18,37 @@ import java.util.Set;
  * <p>Time         : 上午10:41.</p>
  */
 public final class RouteIntent {
+    public static final String DEFAULT_POP_PATH = "/finish";
+    public static final String DEFAULT_POP_URI = Constants.ROUTER_SERVICE_NAME.concat("://").concat(DEFAULT_POP_PATH);
 
     private final Uri mUri;
     private final Bundle mBundle;
     private final int mFlags;
     private final String mTargetClass;
+
+    public static RouteIntent of(String uri){
+        return new Builder().uri(uri).build();
+    }
+
+    public static RouteIntent of(String uri, Bundle bundle){
+        return new Builder().uri(uri).bundle(bundle).build();
+    }
+
+    public static RouteIntent of(String uri, int flags){
+        return new Builder().uri(uri).flags(flags).build();
+    }
+
+    public static RouteIntent of(String uri, Bundle bundle, int flags){
+        return new Builder().uri(uri).bundle(bundle).flags(flags).build();
+    }
+
+    public static RouteIntent popIntent(){
+        return popIntent(null);
+    }
+
+    public static RouteIntent popIntent(Bundle bundle){
+        return new Builder().uri(DEFAULT_POP_URI).bundle(bundle).build();
+    }
 
     private RouteIntent(Builder builder){
         mUri = builder.mUri;

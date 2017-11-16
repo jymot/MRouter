@@ -1,6 +1,7 @@
 package im.wangchao.mrouter;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -12,6 +13,7 @@ import java.util.List;
 import im.wangchao.mrouter.annotations.Constants;
 import im.wangchao.mrouter.annotations.RouterService;
 
+import static im.wangchao.mrouter.RouteIntent.DEFAULT_POP_URI;
 import static im.wangchao.mrouter.RouterServiceCenter.NAME;
 
 /**
@@ -69,8 +71,17 @@ public class RouterServiceCenter implements IRouterService {
         }
 
         Intent intent = route.getPopIntent(context);
-        ((Activity) context).setResult(resultCode, intent);
-        ((Activity) context).finish();
+
+        if (TextUtils.equals(uri.toString(), DEFAULT_POP_URI)){
+            ((Activity) context).setResult(resultCode, intent);
+            ((Activity) context).finish();
+        } else {
+            final String targetClass = RouterRepository.getTargetClass(scheme, path);
+            ComponentName componentName = new ComponentName(context, targetClass);
+            intent.setComponent(componentName);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            context.startActivity(intent);
+        }
     }
 
     private boolean pushServiceProceed(String name, Context context, RouteIntent route, int requestCode){
