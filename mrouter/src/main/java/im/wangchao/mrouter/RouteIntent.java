@@ -45,7 +45,7 @@ public final class RouteIntent {
         return mTargetClass;
     }
 
-    public Intent getIntent(Context context){
+    public Intent getPushIntent(Context context){
         ComponentName component = new ComponentName(context, mTargetClass);
         Intent intent = new Intent();
         intent.setComponent(component);
@@ -57,6 +57,12 @@ public final class RouteIntent {
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         }
 
+        return intent;
+    }
+
+    public Intent getPopIntent(Context context){
+        Intent intent = new Intent();
+        intent.putExtras(mBundle);
         return intent;
     }
 

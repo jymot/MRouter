@@ -43,7 +43,7 @@ public class RouterServiceCenter implements IRouterService {
             }
         }
 
-        Intent intent = route.getIntent(context);
+        Intent intent = route.getPushIntent(context);
 
         if (requestCode > 0) {
             ActivityCompat.startActivityForResult((Activity) context, intent, requestCode, null);
@@ -53,7 +53,24 @@ public class RouterServiceCenter implements IRouterService {
     }
 
     @Override public void pop(Context context, RouteIntent route, int resultCode) {
+        final Uri uri = route.uri();
+        // Scheme is RouterService name.
+        final String scheme = uri.getScheme();
+        final String path = uri.getPath();
 
+        // Global interceptor.
+        route = popProceed(RouterRepository.getInterceptors(NAME), context, route, resultCode);
+
+        if (!TextUtils.equals(scheme, NAME)){
+            // exec other RouterService
+            if (popServiceProceed(scheme, context, route, resultCode)){
+                return;
+            }
+        }
+
+        Intent intent = route.getPopIntent(context);
+        ((Activity) context).setResult(resultCode, intent);
+        ((Activity) context).finish();
     }
 
     private boolean pushServiceProceed(String name, Context context, RouteIntent route, int requestCode){
@@ -70,10 +87,36 @@ public class RouterServiceCenter implements IRouterService {
         return true;
     }
 
+    private boolean popServiceProceed(String name, Context context, RouteIntent route, int resultCode){
+        IRouterService service = RouterRepository.getRouterService(name);
+        if (service == null){
+            return false;
+        }
+
+        // current
+        List<IInterceptor> interceptors = RouterRepository.getInterceptors(name);
+        route = popProceed(interceptors, context, route, resultCode);
+        service.pop(context, route, resultCode);
+
+        return true;
+    }
+
     private RouteIntent pushProceed(List<IInterceptor> interceptors, Context context, RouteIntent route, int requestCode){
         if (!isListEmpty(interceptors)){
             for (IInterceptor interceptor: interceptors){
                 RouteIntent temp = interceptor.pushProceed(context, route, requestCode);
+                if (temp != null){
+                    route = temp;
+                }
+            }
+        }
+        return route;
+    }
+
+    private RouteIntent popProceed(List<IInterceptor> interceptors, Context context, RouteIntent route, int resultCode){
+        if (!isListEmpty(interceptors)){
+            for (IInterceptor interceptor: interceptors){
+                RouteIntent temp = interceptor.popProceed(context, route, resultCode);
                 if (temp != null){
                     route = temp;
                 }
