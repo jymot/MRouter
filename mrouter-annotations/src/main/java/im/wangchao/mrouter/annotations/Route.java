@@ -5,6 +5,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import static im.wangchao.mrouter.annotations.Constants.ROUTER_SERVICE_NAME;
+
 /**
  * <p>Description  : Route.</p>
  * <p>Author       : wangchao.</p>
@@ -17,5 +19,5 @@ public @interface Route {
 
     String path();
 
-    String routerName() default "";
+    String routerName() default ROUTER_SERVICE_NAME;
 }
