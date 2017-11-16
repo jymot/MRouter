@@ -70,7 +70,7 @@ public class RouterServiceCenter implements IRouterService {
             }
         }
 
-        Intent intent = route.getPopIntent(context);
+        Intent intent = route.getPopIntent();
 
         if (TextUtils.equals(uri.toString(), DEFAULT_POP_URI)){
             ((Activity) context).setResult(resultCode, intent);
@@ -79,7 +79,6 @@ public class RouterServiceCenter implements IRouterService {
             final String targetClass = RouterRepository.getTargetClass(scheme, path);
             ComponentName componentName = new ComponentName(context, targetClass);
             intent.setComponent(componentName);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             context.startActivity(intent);
         }
     }

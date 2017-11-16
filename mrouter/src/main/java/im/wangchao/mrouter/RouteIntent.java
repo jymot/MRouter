@@ -88,9 +88,14 @@ public final class RouteIntent {
         return intent;
     }
 
-    public Intent getPopIntent(Context context){
+    public Intent getPopIntent(){
         Intent intent = new Intent();
         intent.putExtras(mBundle);
+        if (-1 != mFlags){
+            intent.addFlags(mFlags);
+        } else {
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        }
         return intent;
     }
 
