@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import im.wangchao.mrouter.annotations.Constants;
-import im.wangchao.mrouter.annotations.RouterService;
 
 import static im.wangchao.mrouter.RouterServiceCenter.NAME;
 
@@ -17,7 +16,6 @@ import static im.wangchao.mrouter.RouterServiceCenter.NAME;
  * <p>Date         : 2017/11/15.</p>
  * <p>Time         : 下午3:45.</p>
  */
-@RouterService("aa")
 /*package*/ class RouterRepository {
     private static volatile RouterRepository sInstance;
 

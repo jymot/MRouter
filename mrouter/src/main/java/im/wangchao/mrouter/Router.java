@@ -2,8 +2,6 @@ package im.wangchao.mrouter;
 
 import android.content.Context;
 
-import im.wangchao.mrouter.annotations.Interceptor;
-
 /**
  * <p>Description  : Router.
  *                   app://module/path</p>
@@ -11,7 +9,6 @@ import im.wangchao.mrouter.annotations.Interceptor;
  * <p>Date         : 2017/11/10.</p>
  * <p>Time         : 上午9:26.</p>
  */
-@Interceptor
 public class Router {
     private static volatile Router sRouter;
 

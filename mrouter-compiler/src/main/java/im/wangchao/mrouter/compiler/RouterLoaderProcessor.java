@@ -92,7 +92,7 @@ public class RouterLoaderProcessor extends AbstractProcessor {
     private void parseInterceptor(TypeElement typeElement, BuildLoaderClass buildClass){
         String targetClass = typeElement.getQualifiedName().toString();
         Interceptor interceptor = typeElement.getAnnotation(Interceptor.class);
-        buildClass.putInterceptor(interceptor.routerName(), targetClass);
+        buildClass.putInterceptor(interceptor.routerName(), interceptor.priority(), targetClass);
         logMessage("process >>> parseInterceptor -> name: " + interceptor.routerName() + ", class: " + targetClass);
     }
 

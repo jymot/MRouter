@@ -5,6 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import static im.wangchao.mrouter.annotations.Constants.INTERCEPTOR_DEFAULT_PRIORITY;
 import static im.wangchao.mrouter.annotations.Constants.ROUTER_SERVICE_NAME;
 
 /**
@@ -17,4 +18,9 @@ import static im.wangchao.mrouter.annotations.Constants.ROUTER_SERVICE_NAME;
 @Retention(RetentionPolicy.CLASS)
 public @interface Interceptor {
     String routerName() default ROUTER_SERVICE_NAME;
+
+    /**
+     * The priority of interceptor. The smaller the more priority.
+     */
+    int priority() default INTERCEPTOR_DEFAULT_PRIORITY;
 }

@@ -24,35 +24,6 @@ import static im.wangchao.mrouter.RouterServiceCenter.NAME;
 public class RouterServiceCenter implements IRouterService {
     static final String NAME = Constants.ROUTER_SERVICE_NAME;
 
-//    public synchronized static void addRouterService(String name, IRouterService service){
-//        addRouterServiceImpl(name, service);
-//    }
-//
-//    public synchronized static void addInterceptor(IInterceptor interceptor){
-//        addInterceptor(NAME, interceptor);
-//    }
-//
-//    public synchronized static void addInterceptor(String name, IInterceptor interceptor){
-//        addInterceptorImpl(name, interceptor);
-//    }
-//
-//    private synchronized static void addRouterServiceImpl(@NonNull String name, IRouterService service){
-//        sRouterServices.put(name, service);
-//    }
-//
-//    private synchronized static void addInterceptorImpl(String name, IInterceptor interceptor){
-//        if (TextUtils.isEmpty(name)){
-//            name = NAME;
-//        }
-//
-//        List<IInterceptor> list = sInterceptors.get(name);
-//        if (list == null) {
-//            list = new ArrayList<>();
-//            sInterceptors.put(name, list);
-//        }
-//        list.add(interceptor);
-//    }
-
     @Override public void push(Context context, RouteIntent route, int requestCode) {
         final Uri uri = route.uri();
         // Scheme is RouterService name.

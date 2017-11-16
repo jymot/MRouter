@@ -16,6 +16,8 @@ public final class Constants {
     public static final String CLASS_IINTERCEPTOR = "im.wangchao.mrouter.IInterceptor";
     public static final String CLASS_IROUTERSERVICE = "im.wangchao.mrouter.IRouterService";
 
+    public static final int INTERCEPTOR_DEFAULT_PRIORITY = 999;
+
     public static String getClassName(String simpleName){
         return CLASSS_PACKAGE.concat(".").concat(simpleName);
     }

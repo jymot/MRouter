@@ -11,6 +11,7 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,7 @@ import static im.wangchao.mrouter.annotations.Constants.CLASS_ILOADER_NAME;
 import static im.wangchao.mrouter.annotations.Constants.CLASS_IINTERCEPTOR;
 import static im.wangchao.mrouter.annotations.Constants.CLASS_ILOADER;
 import static im.wangchao.mrouter.annotations.Constants.CLASS_IROUTERSERVICE;
+import static im.wangchao.mrouter.annotations.Constants.INTERCEPTOR_DEFAULT_PRIORITY;
 
 
 /**
@@ -34,13 +36,26 @@ import static im.wangchao.mrouter.annotations.Constants.CLASS_IROUTERSERVICE;
  */
 /*package*/ class BuildLoaderClass {
 
+    private static class InterceptorPriority{
+        String cls;
+        int priority = INTERCEPTOR_DEFAULT_PRIORITY;
+        InterceptorPriority(int priority, String cls){
+            this.priority = priority;
+            this.cls = cls;
+        }
+
+        int getPriority(){
+            return priority;
+        }
+    }
+
     private static final String FIELD_ROUTES = "mRoutes";
     private static final String FIELD_ROUTERSERVICES = "mRouterServices";
     private static final String FIELD_INTERCEPTORS = "mInterceptors";
 
     private Map<String, Map<String, String>> mRoutes = new HashMap<>();
     private Map<String, String> mRouterServices = new HashMap<>();
-    private Map<String, List<String>> mInterceptors = new HashMap<>();
+    private Map<String, List<InterceptorPriority>> mInterceptors = new HashMap<>();
 
     private Elements mElementUtils;
 
@@ -57,9 +72,9 @@ import static im.wangchao.mrouter.annotations.Constants.CLASS_IROUTERSERVICE;
         mRouterServices.put(routerName, targetClass);
     }
 
-    void putInterceptor(String routerName, String targetClass){
-        List<String> list = mInterceptors.computeIfAbsent(routerName, s -> new ArrayList<>());
-        list.add(targetClass);
+    void putInterceptor(String routerName, int priority, String targetClass){
+        List<InterceptorPriority> list = mInterceptors.computeIfAbsent(routerName, s -> new ArrayList<>());
+        list.add(new InterceptorPriority(priority, targetClass));
     }
 
     JavaFile brewJava() throws Exception{
@@ -127,7 +142,9 @@ import static im.wangchao.mrouter.annotations.Constants.CLASS_IROUTERSERVICE;
         });
         mInterceptors.forEach((key, value) -> {
             constructor.addStatement("$T<String> $LList = new $T<>()", List.class, key, ArrayList.class);
-            value.forEach(item -> constructor.addStatement("$LList.add($S)", key, item));
+            // sorted
+            value.sort(Comparator.comparing(InterceptorPriority::getPriority));
+            value.forEach(item -> constructor.addStatement("$LList.add($S)", key, item.cls));
             constructor.addStatement("$L.put($S, $LList)", FIELD_INTERCEPTORS, key, key);
         });
 
