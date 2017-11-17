@@ -8,22 +8,22 @@ import java.lang.annotation.Target;
 import static im.wangchao.mrouter.annotations.Constants.ROUTER_SERVICE_NAME;
 
 /**
- * <p>Description  : Route.</p>
+ * <p>Description  : Provider.</p>
  * <p>Author       : wangchao.</p>
- * <p>Date         : 2017/11/11.</p>
- * <p>Time         : 下午2:00.</p>
+ * <p>Date         : 2017/11/17.</p>
+ * <p>Time         : 上午8:23.</p>
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.CLASS)
-public @interface Route {
+public @interface Provider {
 
     /**
-     * The path to this Route.
+     * The name for this Provider.
      */
-    String path();
+    String name();
 
     /**
-     * The Route that belongs to this RouterService.
+     * The interceptor that belongs to this RouterService.
      */
     String routerName() default ROUTER_SERVICE_NAME;
 }

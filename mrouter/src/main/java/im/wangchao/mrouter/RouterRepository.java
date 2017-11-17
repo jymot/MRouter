@@ -21,6 +21,7 @@ import static im.wangchao.mrouter.RouterServiceCenter.NAME;
 
     private Map<String, IRouterService> mRouterServices = new HashMap<>();
     private Map<String, List<IInterceptor>> mInterceptors = new HashMap<>();
+    private Map<String, Map<String, IProvider>> mProviders = new HashMap<>();
 
     private ILoader mLoader;
 
@@ -85,5 +86,10 @@ import static im.wangchao.mrouter.RouterServiceCenter.NAME;
 
     private String getTargetClassImpl(String routerName, String path){
         return mLoader.getTargetClass(routerName, path);
+    }
+
+    private IProvider getProviderImpl(String routerName, String provider){
+        return null;
+//        return mProviders.get(routerName).get(provider);
     }
 }

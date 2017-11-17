@@ -13,7 +13,7 @@ import static im.wangchao.mrouter.RouteIntent.DEFAULT_POP_URI;
  * <p>Date         : 2017/11/10.</p>
  * <p>Time         : 上午9:26.</p>
  */
-public class Router {
+public final class Router {
     private Router(){}
 
     public static void init(){

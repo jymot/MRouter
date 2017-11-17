@@ -17,6 +17,10 @@ import static im.wangchao.mrouter.annotations.Constants.ROUTER_SERVICE_NAME;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.CLASS)
 public @interface Interceptor {
+
+    /**
+     * The interceptor that belongs to this RouterService.
+     */
     String routerName() default ROUTER_SERVICE_NAME;
 
     /**

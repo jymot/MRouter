@@ -16,6 +16,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 
 import im.wangchao.mrouter.annotations.Interceptor;
+import im.wangchao.mrouter.annotations.Provider;
 import im.wangchao.mrouter.annotations.Route;
 import im.wangchao.mrouter.annotations.RouterService;
 
@@ -44,6 +45,7 @@ public class RouterLoaderProcessor extends AbstractProcessor {
         supportTypes.add(Interceptor.class.getCanonicalName());
         supportTypes.add(Route.class.getCanonicalName());
         supportTypes.add(RouterService.class.getCanonicalName());
+        supportTypes.add(Provider.class.getCanonicalName());
         return supportTypes;
     }
 

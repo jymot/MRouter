@@ -23,7 +23,7 @@ import static im.wangchao.mrouter.RouterServiceCenter.NAME;
  * <p>Time         : 下午1:47.</p>
  */
 @RouterService(NAME)
-public class RouterServiceCenter implements IRouterService {
+public class RouterServiceCenter implements IRouterService, IProvider{
     static final String NAME = Constants.ROUTER_SERVICE_NAME;
 
     @Override public void push(Context context, RouteIntent route, int requestCode) {
@@ -81,6 +81,16 @@ public class RouterServiceCenter implements IRouterService {
             intent.setComponent(componentName);
             context.startActivity(intent);
         }
+    }
+
+    @Override public void onReceiver(RouteIntent route, RouterCallback callback) {
+        final Uri uri = route.uri();
+        // Scheme is RouterService name.
+        final String scheme = uri.getScheme();
+        final String path = uri.getPath();
+
+        // Global interceptor.
+        // todo
     }
 
     private boolean pushServiceProceed(String name, Context context, RouteIntent route, int requestCode){

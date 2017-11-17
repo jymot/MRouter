@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
 public @interface RouterService {
 
     /**
-     * RouterService name，eg. Scheme://Authority/Path, scheme is name.
+     * RouterService name，eg. Scheme://Authority/Path, scheme is the name.
      */
     String value();
 }
