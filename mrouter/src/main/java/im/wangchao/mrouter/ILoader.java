@@ -13,18 +13,25 @@ public interface ILoader {
     // 加载 Interceptor
     // 加载 RouterService
     // 加载 Route
+    // 加载 IProvider
 
     /**
      * 加载所有 IInterceptor 到目标集合
-     * @param target 需要加载数据的数据集
+     * @param target 需要加载数据的数据集，key：RouterService Name
      */
     void loadInterceptors(Map<String, List<IInterceptor>> target);
 
     /**
      * 加载所有 IRouterService 到目标集合
-     * @param target 需要加载数据的数据集
+     * @param target 需要加载数据的数据集，key：RouterService Name
      */
     void loadRouterServices(Map<String, IRouterService> target);
+
+    /**
+     * 加载所有 IProvider 到目标集合
+     * @param target 需要加载数据的数据集，key：RouterService://Authority
+     */
+    void loadProviders(Map<String, IProvider> target);
 
     /**
      * 加载 IInterceptor 到目标集合
@@ -48,4 +55,12 @@ public interface ILoader {
      * @param path Path
      */
     String getTargetClass(String serviceName, String path);
+
+    /**
+     * 加载 IProvider 到目标集合
+     * @param key RouterService://Authority
+     * @param target 加载数据的数据家
+     * @return 当前所要加载的 IProvider
+     */
+    IProvider loadProvider(String key, Map<String, IProvider> target);
 }

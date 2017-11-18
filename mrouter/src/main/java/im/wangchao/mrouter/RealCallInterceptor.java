@@ -52,6 +52,14 @@ import static im.wangchao.mrouter.RouteIntent.DEFAULT_POP_URI;
     }
 
     @Override public RouteIntent requestInterceptor(RequestChain chain, RouterCallback callback) {
+        final RouteIntent route = chain.route();
+        final Uri uri = route.uri();
+        // Scheme is RouterService name.
+        final String scheme = uri.getScheme();
+        final String authority = uri.getAuthority();
+
+        IProvider provider = RouterRepository.getProvider(scheme, authority);
+        provider.onReceiver(route, callback);
         return null;
     }
 }

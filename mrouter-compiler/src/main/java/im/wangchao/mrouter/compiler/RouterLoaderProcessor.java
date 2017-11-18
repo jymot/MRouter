@@ -98,6 +98,14 @@ public class RouterLoaderProcessor extends AbstractProcessor {
         logMessage("process >>> parseInterceptor -> name: " + interceptor.routerName() + ", class: " + targetClass);
     }
 
+    private void parseProvider(TypeElement typeElement, BuildLoaderClass buildClass){
+        String targetClass = typeElement.getQualifiedName().toString();
+        Provider provider = typeElement.getAnnotation(Provider.class);
+        final String key = provider.routerName().concat("://").concat(provider.name());
+        buildClass.putProvider(key, targetClass);
+        logMessage("process >>> parseProvider -> name: " + key + ", class: " + targetClass);
+    }
+
     private void findTargetClass(RoundEnvironment env, TypeElement typeElement, BuildLoaderClass buildClass){
         final Set<? extends Element> elements = env.getElementsAnnotatedWith(typeElement);
         for (Element element: elements){
@@ -107,6 +115,8 @@ public class RouterLoaderProcessor extends AbstractProcessor {
                 parseRoute((TypeElement) element, buildClass);
             } else if (env.getElementsAnnotatedWith(Interceptor.class).contains(element)){
                 parseInterceptor((TypeElement) element, buildClass);
+            } else if (env.getElementsAnnotatedWith(Provider.class).contains(element)){
+                parseProvider((TypeElement) element, buildClass);
             }
         }
     }

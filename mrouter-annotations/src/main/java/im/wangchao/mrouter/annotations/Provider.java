@@ -18,7 +18,7 @@ import static im.wangchao.mrouter.annotations.Constants.ROUTER_SERVICE_NAME;
 public @interface Provider {
 
     /**
-     * The name for this Provider.
+     * The name for this Provider. Scheme://Authority/Path, authority is the name.
      */
     String name();
 

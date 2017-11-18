@@ -11,6 +11,7 @@ import im.wangchao.mrouter.annotations.Constants;
 import im.wangchao.mrouter.annotations.RouterService;
 import im.wangchao.mrouter.internal.RealInterceptorPopChain;
 import im.wangchao.mrouter.internal.RealInterceptorPushChain;
+import im.wangchao.mrouter.internal.RealInterceptorRequestChain;
 
 import static im.wangchao.mrouter.RouterServiceCenter.NAME;
 
@@ -50,7 +51,7 @@ public class RouterServiceCenter implements IRouterService, IProvider{
 
         interceptors.add(new RealCallInterceptor());
 
-        RealInterceptorPushChain chain = new RealInterceptorPushChain(globalInterceptor, 0, route);
+        RealInterceptorPushChain chain = new RealInterceptorPushChain(interceptors, 0, route);
         chain.proceed(context, route, requestCode);
     }
 
@@ -76,7 +77,7 @@ public class RouterServiceCenter implements IRouterService, IProvider{
 
         interceptors.add(new RealCallInterceptor());
 
-        RealInterceptorPushChain chain = new RealInterceptorPushChain(globalInterceptor, 0, route);
+        RealInterceptorPopChain chain = new RealInterceptorPopChain(interceptors, 0, route);
         chain.proceed(context, route, resultCode);
     }
 
@@ -85,42 +86,59 @@ public class RouterServiceCenter implements IRouterService, IProvider{
         // Scheme is RouterService name.
         final String scheme = uri.getScheme();
         final String path = uri.getPath();
+        final String authority = uri.getAuthority();
 
+        List<IInterceptor> interceptors = new ArrayList<>();
         // Global interceptor.
-        // todo
+        List<IInterceptor> globalInterceptor = RouterRepository.getInterceptors(NAME);
+        if (!isListEmpty(globalInterceptor)){
+            interceptors.addAll(globalInterceptor);
+        }
+
+        if (!TextUtils.equals(scheme, NAME)){
+            List<IInterceptor> childInterceptor = RouterRepository.getInterceptors(scheme);
+            if (!isListEmpty(childInterceptor)){
+                interceptors.addAll(childInterceptor);
+            }
+        }
+
+        interceptors.add(new RealCallInterceptor());
+
+        RealInterceptorRequestChain chain = new RealInterceptorRequestChain(interceptors, 0, route);
+        chain.proceed(route, callback);
     }
 
-    private boolean pushServiceProceed(List<IInterceptor> globalInterceptor, String name, Context context, RouteIntent route, int requestCode){
+    private boolean pushServiceProceed(List<IInterceptor> interceptors, String name, Context context, RouteIntent route, int requestCode){
         IRouterService service = RouterRepository.getRouterService(name);
         if (service == null){
             return false;
         }
 
         // current
-        List<IInterceptor> interceptors = RouterRepository.getInterceptors(name);
-        if (!isListEmpty(interceptors)){
-            globalInterceptor.addAll(interceptors);
+        List<IInterceptor> childInterceptors = RouterRepository.getInterceptors(name);
+        if (!isListEmpty(childInterceptors)){
+            interceptors.addAll(childInterceptors);
         }
 
-        RealInterceptorPushChain chain = new RealInterceptorPushChain(globalInterceptor, 0, route);
+        RealInterceptorPushChain chain = new RealInterceptorPushChain(interceptors, 0, route);
         service.push(context, chain.proceed(context, route, requestCode), requestCode);
 
         return true;
     }
 
-    private boolean popServiceProceed(List<IInterceptor> globalInterceptor, String name, Context context, RouteIntent route, int resultCode){
+    private boolean popServiceProceed(List<IInterceptor> interceptors, String name, Context context, RouteIntent route, int resultCode){
         IRouterService service = RouterRepository.getRouterService(name);
         if (service == null){
             return false;
         }
 
         // current
-        List<IInterceptor> interceptors = RouterRepository.getInterceptors(name);
-        if (!isListEmpty(interceptors)){
-            globalInterceptor.addAll(interceptors);
+        List<IInterceptor> childInterceptors = RouterRepository.getInterceptors(name);
+        if (!isListEmpty(childInterceptors)){
+            interceptors.addAll(childInterceptors);
         }
 
-        RealInterceptorPopChain chain = new RealInterceptorPopChain(globalInterceptor, 0, route);
+        RealInterceptorPopChain chain = new RealInterceptorPopChain(interceptors, 0, route);
         service.pop(context, chain.proceed(context, route, resultCode), resultCode);
 
         return true;

@@ -21,7 +21,7 @@ import static im.wangchao.mrouter.RouterServiceCenter.NAME;
 
     private Map<String, IRouterService> mRouterServices = new HashMap<>();
     private Map<String, List<IInterceptor>> mInterceptors = new HashMap<>();
-    private Map<String, Map<String, IProvider>> mProviders = new HashMap<>();
+    private Map<String, IProvider> mProviders = new HashMap<>();
 
     private ILoader mLoader;
 
@@ -42,6 +42,7 @@ import static im.wangchao.mrouter.RouterServiceCenter.NAME;
             ILoader loader = (ILoader) Class.forName(Constants.getClassName(Constants.CLASS_ILOADER_NAME)).newInstance();
             loader.loadInterceptors(instance().mInterceptors);
             loader.loadRouterServices(instance().mRouterServices);
+            loader.loadProviders(instance().mProviders);
             instance().mLoader = loader;
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
@@ -68,6 +69,10 @@ import static im.wangchao.mrouter.RouterServiceCenter.NAME;
         return instance().getTargetClassImpl(routerName, path);
     }
 
+    static IProvider getProvider(String routerName, String provider){
+        return instance().getProviderImpl(routerName, provider);
+    }
+
     @Nullable private List<IInterceptor> getInterceptorsImpl(String name){
         List<IInterceptor> interceptors = mInterceptors.get(name);
         if (interceptors == null){
@@ -88,8 +93,12 @@ import static im.wangchao.mrouter.RouterServiceCenter.NAME;
         return mLoader.getTargetClass(routerName, path);
     }
 
-    private IProvider getProviderImpl(String routerName, String provider){
-        return null;
-//        return mProviders.get(routerName).get(provider);
+    private IProvider getProviderImpl(String routerName, String providerName){
+        final String key = routerName.concat("://").concat(providerName);
+        IProvider provider = mProviders.get(key);
+        if (provider == null){
+            provider = mLoader.loadProvider(key, mProviders);
+        }
+        return provider;
     }
 }

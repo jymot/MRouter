@@ -15,6 +15,7 @@ public final class Constants {
     public static final String CLASS_ILOADER = "im.wangchao.mrouter.ILoader";
     public static final String CLASS_IINTERCEPTOR = "im.wangchao.mrouter.IInterceptor";
     public static final String CLASS_IROUTERSERVICE = "im.wangchao.mrouter.IRouterService";
+    public static final String CLASS_IPROVIDER = "im.wangchao.mrouter.IProvider";
 
     public static final int INTERCEPTOR_DEFAULT_PRIORITY = 999;
 

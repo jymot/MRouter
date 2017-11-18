@@ -24,6 +24,7 @@ import static im.wangchao.mrouter.annotations.Constants.CLASSS_PACKAGE;
 import static im.wangchao.mrouter.annotations.Constants.CLASS_ILOADER_NAME;
 import static im.wangchao.mrouter.annotations.Constants.CLASS_IINTERCEPTOR;
 import static im.wangchao.mrouter.annotations.Constants.CLASS_ILOADER;
+import static im.wangchao.mrouter.annotations.Constants.CLASS_IPROVIDER;
 import static im.wangchao.mrouter.annotations.Constants.CLASS_IROUTERSERVICE;
 import static im.wangchao.mrouter.annotations.Constants.INTERCEPTOR_DEFAULT_PRIORITY;
 
@@ -52,10 +53,12 @@ import static im.wangchao.mrouter.annotations.Constants.INTERCEPTOR_DEFAULT_PRIO
     private static final String FIELD_ROUTES = "mRoutes";
     private static final String FIELD_ROUTERSERVICES = "mRouterServices";
     private static final String FIELD_INTERCEPTORS = "mInterceptors";
+    private static final String FIELD_PROVIDERS = "mProviders";
 
     private Map<String, Map<String, String>> mRoutes = new HashMap<>();
     private Map<String, String> mRouterServices = new HashMap<>();
     private Map<String, List<InterceptorPriority>> mInterceptors = new HashMap<>();
+    private Map<String, String> mProviders = new HashMap<>();
 
     private Elements mElementUtils;
 
@@ -75,6 +78,10 @@ import static im.wangchao.mrouter.annotations.Constants.INTERCEPTOR_DEFAULT_PRIO
     void putInterceptor(String routerName, int priority, String targetClass){
         List<InterceptorPriority> list = mInterceptors.computeIfAbsent(routerName, s -> new ArrayList<>());
         list.add(new InterceptorPriority(priority, targetClass));
+    }
+
+    void putProvider(String key, String targetClass) {
+        mProviders.put(key, targetClass);
     }
 
     JavaFile brewJava() throws Exception{
@@ -127,6 +134,12 @@ import static im.wangchao.mrouter.annotations.Constants.INTERCEPTOR_DEFAULT_PRIO
         FieldSpec.Builder routeBuilder = FieldSpec.builder(routeMap, FIELD_ROUTES, Modifier.PRIVATE, Modifier.FINAL);
         routeBuilder.initializer("new $T<>()", HashMap.class);
         result.addField(routeBuilder.build());
+
+        // private Map<String, String> mProviders = new HashMap<>();
+        TypeName providersMap = ParameterizedTypeName.get(Map.class, String.class, String.class);
+        FieldSpec.Builder providersBuilder = FieldSpec.builder(providersMap, FIELD_PROVIDERS, Modifier.PRIVATE, Modifier.FINAL);
+        providersBuilder.initializer("new $T<>()", HashMap.class);
+        result.addField(providersBuilder.build());
     }
 
     private void addConstructor(TypeSpec.Builder result){
@@ -147,6 +160,7 @@ import static im.wangchao.mrouter.annotations.Constants.INTERCEPTOR_DEFAULT_PRIO
             value.forEach(item -> constructor.addStatement("$LList.add($S)", key, item.cls));
             constructor.addStatement("$L.put($S, $LList)", FIELD_INTERCEPTORS, key, key);
         });
+        mProviders.forEach((key, value) -> constructor.addStatement("$L.put($S, $S)", FIELD_PROVIDERS, key, value));
 
         result.addMethod(constructor.build());
     }
@@ -167,16 +181,26 @@ import static im.wangchao.mrouter.annotations.Constants.INTERCEPTOR_DEFAULT_PRIO
                 ClassName.get(String.class),
                 ClassName.get(mElementUtils.getTypeElement(CLASS_IROUTERSERVICE))
         );
+        // Map<String, IProvider>
+        ParameterizedTypeName loadProvidersParams = ParameterizedTypeName.get(
+                ClassName.get(Map.class),
+                ClassName.get(String.class),
+                ClassName.get(mElementUtils.getTypeElement(CLASS_IPROVIDER))
+        );
 
         loadInterceptors(result, loadInterceptorsParams);
 
         loadRouterServices(result, loadRouterServicesParams);
+
+        loadProviders(result, loadProvidersParams);
 
         loadInterceptor(result, loadInterceptorsParams);
 
         loadRouterService(result, loadRouterServicesParams);
 
         getTargetClass(result);
+
+        loadProvider(result, loadProvidersParams);
     }
 
     /**
@@ -224,6 +248,29 @@ import static im.wangchao.mrouter.annotations.Constants.INTERCEPTOR_DEFAULT_PRIO
                 .addParameter(ParameterSpec.builder(loadRouterServicesParams, "target").build())
                 .addCode(codeBlock.build());
         result.addMethod(loadRouterServices.build());
+    }
+
+    /**
+     * void loadProviders(Map<String, IProvider> target){
+     *      Set<String> names = mProviders.keySet();
+     *      for (String name: names){
+     *          loadProvider(name, target);
+     *      }
+     * }
+     */
+    private void loadProviders(TypeSpec.Builder result, ParameterizedTypeName loadProvidersParams) {
+        CodeBlock.Builder codeBlock = CodeBlock.builder();
+        codeBlock.addStatement("$T<$T> names = $L.keySet()", Set.class, String.class, FIELD_PROVIDERS)
+                .beginControlFlow("for (String name: names)")
+                .addStatement("loadProvider(name, target)")
+                .endControlFlow();
+
+        MethodSpec.Builder loadProviders = MethodSpec.methodBuilder("loadProviders")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(ParameterSpec.builder(loadProvidersParams, "target").build())
+                .addCode(codeBlock.build());
+        result.addMethod(loadProviders.build());
     }
 
     /**
@@ -315,5 +362,37 @@ import static im.wangchao.mrouter.annotations.Constants.INTERCEPTOR_DEFAULT_PRIO
                 .returns(ClassName.get(String.class))
                 .addStatement("return $L.get(serviceName).get(path)", FIELD_ROUTES);
         result.addMethod(getTargetClass.build());
+    }
+
+    /**
+     * IProvider loadProvider(String key, Map<String, IProvider> target){
+     *     try {
+     *          IProvider provider = (IProvider) Class.forName(mProviders.get(key)).newInstance();
+     *          target.put(key, provider);
+     *          return provider;
+     *     } catch (Exception ignore) {
+     *          return null;
+     *     }
+     * }
+     */
+    private void loadProvider(TypeSpec.Builder result, ParameterizedTypeName loadProvidersParams) {
+        CodeBlock.Builder codeBlock = CodeBlock.builder();
+        ClassName IProvider = ClassName.get(mElementUtils.getTypeElement(CLASS_IPROVIDER));
+        codeBlock.add("try {\n")
+                .addStatement("$T provider = ($T) $T.forName($L.get(key)).newInstance()", IProvider, IProvider, Class.class, FIELD_PROVIDERS)
+                .addStatement("target.put(key, provider)")
+                .addStatement("return provider")
+                .add("} catch (Exception e) {\n")
+                .addStatement("return null")
+                .add("}\n");
+
+        MethodSpec.Builder loadProvider = MethodSpec.methodBuilder("loadProvider")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(ParameterSpec.builder(ClassName.get(String.class), "key").build())
+                .addParameter(ParameterSpec.builder(loadProvidersParams, "target").build())
+                .returns(ClassName.get(mElementUtils.getTypeElement(CLASS_IPROVIDER)))
+                .addCode(codeBlock.build());
+        result.addMethod(loadProvider.build());
     }
 }
