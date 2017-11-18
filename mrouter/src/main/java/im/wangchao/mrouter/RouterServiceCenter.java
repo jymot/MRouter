@@ -1,19 +1,17 @@
 package im.wangchao.mrouter;
 
-import android.app.Activity;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
-import android.support.v4.app.ActivityCompat;
 import android.text.TextUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import im.wangchao.mrouter.annotations.Constants;
 import im.wangchao.mrouter.annotations.RouterService;
+import im.wangchao.mrouter.internal.RealInterceptorPopChain;
+import im.wangchao.mrouter.internal.RealInterceptorPushChain;
 
-import static im.wangchao.mrouter.RouteIntent.DEFAULT_POP_URI;
 import static im.wangchao.mrouter.RouterServiceCenter.NAME;
 
 /**
@@ -35,52 +33,51 @@ public class RouterServiceCenter implements IRouterService, IProvider{
         // Load target class
         route = route.newBuilder().targetClass(RouterRepository.getTargetClass(scheme, path)).build();
 
+        List<IInterceptor> interceptors = new ArrayList<>();
+
         // Global interceptor.
-        route = pushProceed(RouterRepository.getInterceptors(NAME), context, route, requestCode);
+        List<IInterceptor> globalInterceptor = RouterRepository.getInterceptors(NAME);
+        if (!isListEmpty(globalInterceptor)){
+            interceptors.addAll(globalInterceptor);
+        }
 
         if (!TextUtils.equals(scheme, NAME)){
             // exec other RouterService
-            if (pushServiceProceed(scheme, context, route, requestCode)){
+            if (pushServiceProceed(interceptors, scheme, context, route, requestCode)){
                 return;
             }
         }
 
-        Intent intent = route.getPushIntent(context);
+        interceptors.add(new RealCallInterceptor());
 
-        if (requestCode > 0) {
-            ActivityCompat.startActivityForResult((Activity) context, intent, requestCode, null);
-        } else {
-            ActivityCompat.startActivity(context, intent, null);
-        }
+        RealInterceptorPushChain chain = new RealInterceptorPushChain(globalInterceptor, 0, route);
+        chain.proceed(context, route, requestCode);
     }
 
     @Override public void pop(Context context, RouteIntent route, int resultCode) {
         final Uri uri = route.uri();
         // Scheme is RouterService name.
         final String scheme = uri.getScheme();
-        final String path = uri.getPath();
+
+        List<IInterceptor> interceptors = new ArrayList<>();
 
         // Global interceptor.
-        route = popProceed(RouterRepository.getInterceptors(NAME), context, route, resultCode);
+        List<IInterceptor> globalInterceptor = RouterRepository.getInterceptors(NAME);
+        if (!isListEmpty(globalInterceptor)){
+            interceptors.addAll(globalInterceptor);
+        }
 
         if (!TextUtils.equals(scheme, NAME)){
             // exec other RouterService
-            if (popServiceProceed(scheme, context, route, resultCode)){
+            if (popServiceProceed(interceptors, scheme, context, route, resultCode)){
                 return;
             }
         }
 
-        Intent intent = route.getPopIntent();
+        interceptors.add(new RealCallInterceptor());
 
-        if (TextUtils.equals(uri.toString(), DEFAULT_POP_URI)){
-            ((Activity) context).setResult(resultCode, intent);
-            ((Activity) context).finish();
-        } else {
-            final String targetClass = RouterRepository.getTargetClass(scheme, path);
-            ComponentName componentName = new ComponentName(context, targetClass);
-            intent.setComponent(componentName);
-            context.startActivity(intent);
-        }
+        RealInterceptorPushChain chain = new RealInterceptorPushChain(globalInterceptor, 0, route);
+        chain.proceed(context, route, resultCode);
     }
 
     @Override public void onReceiver(RouteIntent route, RouterCallback callback) {
@@ -93,7 +90,7 @@ public class RouterServiceCenter implements IRouterService, IProvider{
         // todo
     }
 
-    private boolean pushServiceProceed(String name, Context context, RouteIntent route, int requestCode){
+    private boolean pushServiceProceed(List<IInterceptor> globalInterceptor, String name, Context context, RouteIntent route, int requestCode){
         IRouterService service = RouterRepository.getRouterService(name);
         if (service == null){
             return false;
@@ -101,13 +98,17 @@ public class RouterServiceCenter implements IRouterService, IProvider{
 
         // current
         List<IInterceptor> interceptors = RouterRepository.getInterceptors(name);
-        route = pushProceed(interceptors, context, route, requestCode);
-        service.push(context, route, requestCode);
+        if (!isListEmpty(interceptors)){
+            globalInterceptor.addAll(interceptors);
+        }
+
+        RealInterceptorPushChain chain = new RealInterceptorPushChain(globalInterceptor, 0, route);
+        service.push(context, chain.proceed(context, route, requestCode), requestCode);
 
         return true;
     }
 
-    private boolean popServiceProceed(String name, Context context, RouteIntent route, int resultCode){
+    private boolean popServiceProceed(List<IInterceptor> globalInterceptor, String name, Context context, RouteIntent route, int resultCode){
         IRouterService service = RouterRepository.getRouterService(name);
         if (service == null){
             return false;
@@ -115,34 +116,14 @@ public class RouterServiceCenter implements IRouterService, IProvider{
 
         // current
         List<IInterceptor> interceptors = RouterRepository.getInterceptors(name);
-        route = popProceed(interceptors, context, route, resultCode);
-        service.pop(context, route, resultCode);
+        if (!isListEmpty(interceptors)){
+            globalInterceptor.addAll(interceptors);
+        }
+
+        RealInterceptorPopChain chain = new RealInterceptorPopChain(globalInterceptor, 0, route);
+        service.pop(context, chain.proceed(context, route, resultCode), resultCode);
 
         return true;
-    }
-
-    private RouteIntent pushProceed(List<IInterceptor> interceptors, Context context, RouteIntent route, int requestCode){
-        if (!isListEmpty(interceptors)){
-            for (IInterceptor interceptor: interceptors){
-                RouteIntent temp = interceptor.pushProceed(context, route, requestCode);
-                if (temp != null){
-                    route = temp;
-                }
-            }
-        }
-        return route;
-    }
-
-    private RouteIntent popProceed(List<IInterceptor> interceptors, Context context, RouteIntent route, int resultCode){
-        if (!isListEmpty(interceptors)){
-            for (IInterceptor interceptor: interceptors){
-                RouteIntent temp = interceptor.popProceed(context, route, resultCode);
-                if (temp != null){
-                    route = temp;
-                }
-            }
-        }
-        return route;
     }
 
     private boolean isListEmpty(List list){
