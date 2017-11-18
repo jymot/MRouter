@@ -14,10 +14,13 @@ import static im.wangchao.mrouter.RouteIntent.DEFAULT_POP_URI;
  * <p>Time         : 上午9:26.</p>
  */
 public final class Router {
+    private static boolean sInit;
+
     private Router(){}
 
     public static void init(){
         RouterRepository.init();
+        sInit = true;
     }
 
     public static void push(Context context, String uri){
@@ -81,14 +84,23 @@ public final class Router {
     }
 
     public static void push(Context context, RouteIntent route, int requestCode){
+        check();
         RouterRepository.getRouterServiceCenter().push(context, route, requestCode);
     }
 
     public static void pop(Context context, RouteIntent route, int resultCode){
+        check();
         RouterRepository.getRouterServiceCenter().pop(context, route, resultCode);
     }
 
     public static void request(RouteIntent route, RouterCallback callback){
+        check();
         RouterRepository.getRouterServiceCenter().onReceiver(route, callback);
+    }
+
+    private static void check(){
+        if (!sInit){
+            throw new RuntimeException("You must invoke Router.init() first.");
+        }
     }
 }
