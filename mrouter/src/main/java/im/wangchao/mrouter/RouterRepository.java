@@ -53,8 +53,8 @@ import static im.wangchao.mrouter.RouterServiceCenter.NAME;
         }
     }
 
-    static IRouterService getRouterServiceCenter(){
-        return getRouterService(NAME);
+    static RouterServiceCenter getRouterServiceCenter(){
+        return (RouterServiceCenter) getRouterService(NAME);
     }
 
     @Nullable static List<IInterceptor> getInterceptors(String name){

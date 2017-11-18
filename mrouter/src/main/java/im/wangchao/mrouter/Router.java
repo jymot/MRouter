@@ -68,6 +68,18 @@ public final class Router {
         pop(context, RouteIntent.of(uri, bundle), resultCode);
     }
 
+    public static void request(String uri){
+        request(uri, null);
+    }
+
+    public static void request(String uri, Bundle bundle){
+        request(uri, bundle, null);
+    }
+
+    public static void request(String uri, Bundle bundle, RouterCallback callback){
+        request(RouteIntent.of(uri, bundle), callback);
+    }
+
     public static void push(Context context, RouteIntent route, int requestCode){
         RouterRepository.getRouterServiceCenter().push(context, route, requestCode);
     }
@@ -76,5 +88,7 @@ public final class Router {
         RouterRepository.getRouterServiceCenter().pop(context, route, resultCode);
     }
 
-
+    public static void request(RouteIntent route, RouterCallback callback){
+        RouterRepository.getRouterServiceCenter().onReceiver(route, callback);
+    }
 }
