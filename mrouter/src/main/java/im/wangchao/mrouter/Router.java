@@ -18,6 +18,9 @@ public final class Router {
 
     private Router(){}
 
+    /**
+     * Router 模块初始化方法，一般在 Application::onCreate 中调用
+     */
     public static void init(){
         RouterRepository.init();
         sInit = true;
@@ -87,16 +90,36 @@ public final class Router {
         request(RouteIntent.of(uri, bundle), callback);
     }
 
+    /**
+     * 当前页面入栈
+     *
+     * @param context 当前页面 Context
+     * @param route RouteIntent
+     * @param requestCode 请求码
+     */
     public static void push(Context context, RouteIntent route, int requestCode){
         check();
         RouterRepository.getRouterServiceCenter().push(context, route, requestCode);
     }
 
+    /**
+     * 当前页面出栈
+     *
+     * @param context 当前页面 Context
+     * @param route RouteIntent
+     * @param resultCode 响应码
+     */
     public static void pop(Context context, RouteIntent route, int resultCode){
         check();
         RouterRepository.getRouterServiceCenter().pop(context, route, resultCode);
     }
 
+    /**
+     * 模块之间请求数据
+     *
+     * @param route RouteIntent
+     * @param callback RouterCallback
+     */
     public static void request(RouteIntent route, RouterCallback callback){
         check();
         RouterRepository.getRouterServiceCenter().onReceiver(route, callback);

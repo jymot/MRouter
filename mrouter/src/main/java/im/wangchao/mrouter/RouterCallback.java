@@ -8,5 +8,9 @@ package im.wangchao.mrouter;
  */
 public interface RouterCallback {
 
+    /**
+     * 响应回调
+     * @param route RouteIntent
+     */
     void onResponse(RouteIntent route);
 }

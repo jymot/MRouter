@@ -21,9 +21,13 @@ public final class RouteIntent {
     public static final String DEFAULT_POP_PATH = "/finish";
     public static final String DEFAULT_POP_URI = Constants.ROUTER_SERVICE_NAME.concat("://").concat(DEFAULT_POP_PATH);
 
+    // uri
     private final Uri mUri;
+    // params
     private final Bundle mBundle;
+    // start/pop flags
     private final int mFlags;
+    // target class, maybe null.
     private final String mTargetClass;
 
     public static RouteIntent of(String uri){
