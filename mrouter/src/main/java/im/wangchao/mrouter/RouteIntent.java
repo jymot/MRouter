@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 
 import java.util.Set;
 
@@ -78,9 +79,14 @@ public final class RouteIntent {
     }
 
     public Intent getPushIntent(Context context){
-        ComponentName component = new ComponentName(context, mTargetClass);
         Intent intent = new Intent();
-        intent.setComponent(component);
+        if (TextUtils.isEmpty(mTargetClass)){
+            intent.setAction(Intent.ACTION_VIEW);
+            intent.setData(mUri);
+        } else {
+            ComponentName component = new ComponentName(context, mTargetClass);
+            intent.setComponent(component);
+        }
         intent.putExtras(mBundle);
         // Set flags.
         if (-1 != mFlags) {
