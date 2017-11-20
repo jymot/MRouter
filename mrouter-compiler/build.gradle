@@ -5,8 +5,11 @@ dependencies {
     implementation 'com.google.auto.service:auto-service:1.0-rc2'
     implementation 'com.google.auto:auto-common:0.6'
     implementation 'com.squareup:javapoet:1.9.0'
-    implementation project(':mrouter-annotations')
+//    implementation project(':mrouter-annotations')
+    implementation 'im.wangchao:mrouter-annotations:0.1.0'
 }
 
 sourceCompatibility = rootProject.ext.sourceCompatibilityVersion
 targetCompatibility = rootProject.ext.targetCompatibilityVersion
+
+//apply from: 'https://raw.githubusercontent.com/motcwang/Utils/master/bintray-publish/bintray-java.gradle'

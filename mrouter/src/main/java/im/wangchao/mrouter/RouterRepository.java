@@ -66,7 +66,7 @@ import static im.wangchao.mrouter.RouterServiceCenter.NAME;
         return instance().getRouterServiceImpl(name);
     }
 
-    static String getTargetClass(String routerName, String path){
+    @Nullable static String getTargetClass(String routerName, String path){
         return instance().getTargetClassImpl(routerName, path);
     }
 
@@ -91,7 +91,11 @@ import static im.wangchao.mrouter.RouterServiceCenter.NAME;
     }
 
     private String getTargetClassImpl(String routerName, String path){
-        return mLoader.getTargetClass(routerName, path);
+        try {
+            return mLoader.getTargetClass(routerName, path);
+        } catch (Exception e){
+            return null;
+        }
     }
 
     private IProvider getProviderImpl(String routerName, String providerName){

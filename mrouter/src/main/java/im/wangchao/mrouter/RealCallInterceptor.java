@@ -44,8 +44,13 @@ import static im.wangchao.mrouter.RouteIntent.DEFAULT_POP_URI;
             ((Activity) context).finish();
         } else {
             final String targetClass = RouterRepository.getTargetClass(scheme, path);
-            ComponentName componentName = new ComponentName(context, targetClass);
-            intent.setComponent(componentName);
+            if (TextUtils.isEmpty(targetClass)){
+                intent.setAction(Intent.ACTION_VIEW);
+                intent.setData(uri);
+            } else {
+                ComponentName componentName = new ComponentName(context, targetClass);
+                intent.setComponent(componentName);
+            }
             context.startActivity(intent);
         }
         return null;

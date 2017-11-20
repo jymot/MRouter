@@ -22,3 +22,4 @@
 -keep public class * implements im.wangchao.mrouter.ILoader{ public *;}
 -keep public class * implements im.wangchao.mrouter.IRouterService{ public *;}
 -keep public class * implements im.wangchao.mrouter.IInterceptor{ public *;}
+-keep public class * implements im.wangchao.mrouter.IProvider{ public *;}
