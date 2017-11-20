@@ -8,12 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import im.wangchao.mrouter.annotations.Constants;
-import im.wangchao.mrouter.annotations.RouterService;
 import im.wangchao.mrouter.internal.RealInterceptorPopChain;
 import im.wangchao.mrouter.internal.RealInterceptorPushChain;
 import im.wangchao.mrouter.internal.RealInterceptorRequestChain;
-
-import static im.wangchao.mrouter.RouterServiceCenter.NAME;
 
 /**
  * <p>Description  : RouterServiceCenter.</p>
@@ -21,8 +18,7 @@ import static im.wangchao.mrouter.RouterServiceCenter.NAME;
  * <p>Date         : 2017/11/10.</p>
  * <p>Time         : 下午1:47.</p>
  */
-@RouterService(NAME)
-public class RouterServiceCenter implements IRouterService, IProvider{
+/*package*/ class RouterServiceCenter implements IRouterService, IProvider{
     static final String NAME = Constants.ROUTER_SERVICE_NAME;
 
     @Override public void push(Context context, RouteIntent route, int requestCode) {
@@ -120,9 +116,10 @@ public class RouterServiceCenter implements IRouterService, IProvider{
             interceptors.addAll(childInterceptors);
         }
 
-        RealInterceptorPushChain chain = new RealInterceptorPushChain(interceptors, 0, route);
-        service.push(context, chain.proceed(context, route, requestCode), requestCode);
+        interceptors.add(new ForwardServiceInterceptor(service));
 
+        RealInterceptorPushChain chain = new RealInterceptorPushChain(interceptors, 0, route);
+        chain.proceed(context, route, requestCode);
         return true;
     }
 
@@ -138,9 +135,10 @@ public class RouterServiceCenter implements IRouterService, IProvider{
             interceptors.addAll(childInterceptors);
         }
 
-        RealInterceptorPopChain chain = new RealInterceptorPopChain(interceptors, 0, route);
-        service.pop(context, chain.proceed(context, route, resultCode), resultCode);
+        interceptors.add(new ForwardServiceInterceptor(service));
 
+        RealInterceptorPopChain chain = new RealInterceptorPopChain(interceptors, 0, route);
+        chain.proceed(context, route, resultCode);
         return true;
     }
 

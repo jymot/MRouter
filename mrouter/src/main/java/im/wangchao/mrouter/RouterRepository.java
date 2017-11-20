@@ -39,6 +39,7 @@ import static im.wangchao.mrouter.RouterServiceCenter.NAME;
 
     static void init(){
         try {
+            instance().mRouterServices.put(NAME, new RouterServiceCenter());
             ILoader loader = (ILoader) Class.forName(Constants.getClassName(Constants.CLASS_ILOADER_NAME)).newInstance();
             loader.loadInterceptors(instance().mInterceptors);
             loader.loadRouterServices(instance().mRouterServices);

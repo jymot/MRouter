@@ -8,10 +8,9 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-
         javaCompileOptions {
             annotationProcessorOptions {
-                includeCompileClasspath = false
+                arguments = [ moduleName : project.getName() ]
             }
         }
     }
@@ -35,6 +34,5 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
 
-    implementation project(':mrouter-annotations')
-    annotationProcessor project(':mrouter-compiler')
+    api project(':mrouter-annotations')
 }

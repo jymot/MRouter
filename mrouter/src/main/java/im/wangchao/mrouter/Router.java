@@ -72,7 +72,11 @@ public final class Router {
     }
 
     public static void request(String uri){
-        request(uri, null);
+        request(uri, null, null);
+    }
+
+    public static void request(String uri, RouterCallback callback){
+        request(uri, null, callback);
     }
 
     public static void request(String uri, Bundle bundle){
