@@ -54,24 +54,26 @@ public class RouterLoaderProcessor extends AbstractProcessor {
     }
 
     @Override public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        BuildLoaderClass buildClass = new BuildLoaderClass(mElementUtils);
 
         logMessage("annotations >>> " +annotations.size());
 
         final int size = annotations.size();
+        if (size == 0){
+            return false;
+        }
+
+        BuildLoaderClass buildClass = new BuildLoaderClass(mElementUtils);
 
         for (TypeElement element: annotations){
             logMessage("process >>> " + element.getQualifiedName() + " <<< ");
             findTargetClass(roundEnv, element, buildClass);
         }
 
-        if (size != 0){
-            try {
-                buildClass.brewJava().writeTo(mFiler);
-            } catch (Exception e) {
-                e.printStackTrace();
-                logMessage(e.getMessage());
-            }
+        try {
+            buildClass.brewJava().writeTo(mFiler);
+        } catch (Exception e) {
+            e.printStackTrace();
+            logMessage(e.getMessage());
         }
 
         return true;
@@ -81,21 +83,21 @@ public class RouterLoaderProcessor extends AbstractProcessor {
         String targetClass = typeElement.getQualifiedName().toString();
         RouterService routerService = typeElement.getAnnotation(RouterService.class);
         buildClass.putRouterService(routerService.value(), targetClass);
-        logMessage("process >>> parseRouterService -> name: " + routerService.value() + ", class: " + targetClass);
+        logMessage("        >>> parseRouterService -> name: " + routerService.value() + ", class: " + targetClass);
     }
 
     private void parseRoute(TypeElement typeElement, BuildLoaderClass buildClass){
         String targetClass = typeElement.getQualifiedName().toString();
         Route route = typeElement.getAnnotation(Route.class);
         buildClass.putRoute(route.routerName(), route.path(), targetClass);
-        logMessage("process >>> parseRoute -> name: " + route.routerName() + ", path: " + route.path() + ", class: " + targetClass);
+        logMessage("        >>> parseRoute -> name: " + route.routerName() + ", path: " + route.path() + ", class: " + targetClass);
     }
 
     private void parseInterceptor(TypeElement typeElement, BuildLoaderClass buildClass){
         String targetClass = typeElement.getQualifiedName().toString();
         Interceptor interceptor = typeElement.getAnnotation(Interceptor.class);
         buildClass.putInterceptor(interceptor.routerName(), interceptor.priority(), targetClass);
-        logMessage("process >>> parseInterceptor -> name: " + interceptor.routerName() + ", class: " + targetClass);
+        logMessage("        >>> parseInterceptor -> name: " + interceptor.routerName() + ", class: " + targetClass);
     }
 
     private void parseProvider(TypeElement typeElement, BuildLoaderClass buildClass){
@@ -103,7 +105,7 @@ public class RouterLoaderProcessor extends AbstractProcessor {
         Provider provider = typeElement.getAnnotation(Provider.class);
         final String key = provider.routerName().concat("://").concat(provider.name());
         buildClass.putProvider(key, targetClass);
-        logMessage("process >>> parseProvider -> name: " + key + ", class: " + targetClass);
+        logMessage("        >>> parseProvider -> name: " + key + ", class: " + targetClass);
     }
 
     private void findTargetClass(RoundEnvironment env, TypeElement typeElement, BuildLoaderClass buildClass){
