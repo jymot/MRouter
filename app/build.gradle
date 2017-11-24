@@ -11,7 +11,7 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         javaCompileOptions {
             annotationProcessorOptions {
-                arguments = [ moduleName : project.getName() ]
+                arguments = [ moduleName : project.getName(), appModule: "1" ]
             }
         }
     }
@@ -36,5 +36,9 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
 
     implementation project(':mrouter')
-    annotationProcessor project(':mrouter-compiler')
+//    annotationProcessor project(':mrouter-compiler')
+//    implementation 'im.wangchao:mrouter:0.1.2'
+    annotationProcessor 'im.wangchao:mrouter-compiler:0.1.1'
 }
+
+apply plugin: 'im.wangchao.mrouter'

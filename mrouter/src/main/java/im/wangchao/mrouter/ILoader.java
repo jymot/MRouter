@@ -63,4 +63,10 @@ public interface ILoader {
      * @return 当前所要加载的 IProvider
      */
     IProvider loadProvider(String key, Map<String, IProvider> target);
+
+    /**
+     * App Loader 可以获取所有 Loader class 列表
+     * @return ILoader Class List
+     */
+    List<String> loaderClass();
 }

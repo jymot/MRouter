@@ -21,12 +21,12 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.util.Elements;
 
 import static im.wangchao.mrouter.annotations.Constants.CLASSS_PACKAGE;
-import static im.wangchao.mrouter.annotations.Constants.CLASS_ILOADER_NAME;
 import static im.wangchao.mrouter.annotations.Constants.CLASS_IINTERCEPTOR;
 import static im.wangchao.mrouter.annotations.Constants.CLASS_ILOADER;
 import static im.wangchao.mrouter.annotations.Constants.CLASS_IPROVIDER;
 import static im.wangchao.mrouter.annotations.Constants.CLASS_IROUTERSERVICE;
 import static im.wangchao.mrouter.annotations.Constants.INTERCEPTOR_DEFAULT_PRIORITY;
+import static im.wangchao.mrouter.annotations.Constants.getLoaderClassName;
 
 
 /**
@@ -54,6 +54,7 @@ import static im.wangchao.mrouter.annotations.Constants.INTERCEPTOR_DEFAULT_PRIO
     private static final String FIELD_ROUTERSERVICES = "mRouterServices";
     private static final String FIELD_INTERCEPTORS = "mInterceptors";
     private static final String FIELD_PROVIDERS = "mProviders";
+    private static final String FIELD_LOADERS = "mLoaders";
 
     private Map<String, Map<String, String>> mRoutes = new HashMap<>();
     private Map<String, String> mRouterServices = new HashMap<>();
@@ -84,13 +85,13 @@ import static im.wangchao.mrouter.annotations.Constants.INTERCEPTOR_DEFAULT_PRIO
         mProviders.put(key, targetClass);
     }
 
-    JavaFile brewJava() throws Exception{
-        return JavaFile.builder(CLASSS_PACKAGE, createType())
+    JavaFile brewJava(String moduleName) throws Exception{
+        return JavaFile.builder(CLASSS_PACKAGE, createType(moduleName))
                 .addFileComment("Generated code from MRouter. Do not modify!").build();
     }
 
-    private TypeSpec createType() throws Exception{
-        TypeSpec.Builder result = TypeSpec.classBuilder(CLASS_ILOADER_NAME)
+    private TypeSpec createType(String moduleName) throws Exception{
+        TypeSpec.Builder result = TypeSpec.classBuilder(getLoaderClassName(moduleName))
                 .addSuperinterface(ClassName.get(mElementUtils.getTypeElement(CLASS_ILOADER)))
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
 
@@ -99,6 +100,8 @@ import static im.wangchao.mrouter.annotations.Constants.INTERCEPTOR_DEFAULT_PRIO
         addConstructor(result);
 
         addMethod(result);
+
+
 
         return result.build();
     }
@@ -140,6 +143,12 @@ import static im.wangchao.mrouter.annotations.Constants.INTERCEPTOR_DEFAULT_PRIO
         FieldSpec.Builder providersBuilder = FieldSpec.builder(providersMap, FIELD_PROVIDERS, Modifier.PRIVATE, Modifier.FINAL);
         providersBuilder.initializer("new $T<>()", HashMap.class);
         result.addField(providersBuilder.build());
+
+        // private static final List<String> mLoaders = new ArrayList<>();
+        TypeName list = ParameterizedTypeName.get(ClassName.get(List.class), ClassName.get(String.class));
+        FieldSpec.Builder sLoaders = FieldSpec.builder(list, FIELD_LOADERS, Modifier.PRIVATE, Modifier.FINAL, Modifier.STATIC);
+        sLoaders.initializer("new $T<>()", ArrayList.class);
+        result.addField(sLoaders.build());
     }
 
     private void addConstructor(TypeSpec.Builder result){
@@ -201,6 +210,15 @@ import static im.wangchao.mrouter.annotations.Constants.INTERCEPTOR_DEFAULT_PRIO
         getTargetClass(result);
 
         loadProvider(result, loadProvidersParams);
+
+        loaderClass(result);
+
+
+        MethodSpec.Builder loadProvider = MethodSpec.methodBuilder("addLoader")
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                .addParameter(ParameterSpec.builder(ClassName.get(String.class), "cls").build())
+                .addStatement("$L.add(cls)", FIELD_LOADERS);
+        result.addMethod(loadProvider.build());
     }
 
     /**
@@ -394,5 +412,21 @@ import static im.wangchao.mrouter.annotations.Constants.INTERCEPTOR_DEFAULT_PRIO
                 .returns(ClassName.get(mElementUtils.getTypeElement(CLASS_IPROVIDER)))
                 .addCode(codeBlock.build());
         result.addMethod(loadProvider.build());
+    }
+
+    /**
+     * List<String> loaderClass(){
+     *     return mLoaders;
+     * }
+     */
+    private void loaderClass(TypeSpec.Builder result){
+        TypeName list = ParameterizedTypeName.get(ClassName.get(List.class), ClassName.get(String.class));
+
+        MethodSpec.Builder loaderClass = MethodSpec.methodBuilder("loaderClass")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .returns(list)
+                .addStatement("return $L", FIELD_LOADERS);
+        result.addMethod(loaderClass.build());
     }
 }

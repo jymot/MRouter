@@ -13,6 +13,7 @@ import java.util.Set;
  * <p>Time         : 上午10:44.</p>
  */
 public class ILoaderImpl implements ILoader{
+    private static final List<String> mLoaders = new ArrayList();
     private Map<String, List<String>> mInterceptors = new HashMap<>();
     private Map<String, String> mRouterServices = new HashMap<>();
     private Map<String, Map<String, String>> mRoutes = new HashMap<>();
@@ -78,5 +79,13 @@ public class ILoaderImpl implements ILoader{
         } catch (Exception ignore) {
             return null;
         }
+    }
+
+    @Override public List<String> loaderClass() {
+        return mLoaders;
+    }
+
+    public static final void addLoader(String cls) {
+        mLoaders.add(cls);
     }
 }

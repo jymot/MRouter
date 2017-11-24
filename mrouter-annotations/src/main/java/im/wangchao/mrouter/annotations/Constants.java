@@ -9,8 +9,9 @@ package im.wangchao.mrouter.annotations;
 public final class Constants {
     public static final String ROUTER_SERVICE_NAME = "router";
 
-    public static final String CLASSS_PACKAGE = "im.wangchao.mrouter";
-    public static final String CLASS_ILOADER_NAME = "RouterLoaderImpl_AutoGeneration";
+    public static final String APP_MODULE_NAME = "App";
+    public static final String CLASSS_PACKAGE = "im.wangchao.mrouter.loaders";
+    public static final String CLASS_ILOADER_SUFFIX = "_RouterLoader_AutoGeneration";
 
     public static final String CLASS_ILOADER = "im.wangchao.mrouter.ILoader";
     public static final String CLASS_IINTERCEPTOR = "im.wangchao.mrouter.IInterceptor";
@@ -21,5 +22,13 @@ public final class Constants {
 
     public static String getClassName(String simpleName){
         return CLASSS_PACKAGE.concat(".").concat(simpleName);
+    }
+
+    public static String getLoaderClassName(String moduleName) {
+        return moduleName.toUpperCase().concat(CLASS_ILOADER_SUFFIX);
+    }
+
+    public static String getLoaderClassPath(String moduleName) {
+        return CLASSS_PACKAGE.concat(".").concat(getLoaderClassName(moduleName));
     }
 }

@@ -3,6 +3,7 @@ package im.wangchao.mrouter.compiler;
 import com.google.auto.service.AutoService;
 
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -20,6 +21,7 @@ import im.wangchao.mrouter.annotations.Provider;
 import im.wangchao.mrouter.annotations.Route;
 import im.wangchao.mrouter.annotations.RouterService;
 
+import static im.wangchao.mrouter.annotations.Constants.APP_MODULE_NAME;
 import static javax.tools.Diagnostic.Kind.NOTE;
 
 /**
@@ -33,11 +35,37 @@ public class RouterLoaderProcessor extends AbstractProcessor {
 
     private Elements mElementUtils;
     private Filer mFiler;
+    private String mModuleName;
 
     @Override public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
         mElementUtils = processingEnv.getElementUtils();
         mFiler = processingEnv.getFiler();
+
+        // javaCompileOptions{
+        //      annotationProcessorOptions{
+        //          arguments = [ moduleName : project.getName(), appModule : "1" ] // the module is Application
+        //      }
+        // }
+        Map<String, String> options = processingEnv.getOptions();
+        if (options != null && options.size() != 0) {
+            mModuleName = options.get("moduleName");
+            String appModule = options.getOrDefault("appModule", "0");
+            if ("1".equals(appModule)){
+                mModuleName = APP_MODULE_NAME;
+            }
+            logMessage("module name: " + mModuleName);
+        }
+
+        if (mModuleName == null || mModuleName.isEmpty()){
+            throw new RuntimeException("You must add arguments moduleName in your Module. For example:\n" +
+                    "javaCompileOptions{\n" +
+                    "   annotationProcessorOptions{\n" +
+                    "       arguments = [ moduleName : project.getName() ]\n" +
+                    "   }\n" +
+                    "}\n" +
+                    "if the module is Application, you must add arguments appModule: '1'");
+        }
     }
 
     @Override public Set<String> getSupportedAnnotationTypes() {
@@ -70,7 +98,7 @@ public class RouterLoaderProcessor extends AbstractProcessor {
         }
 
         try {
-            buildClass.brewJava().writeTo(mFiler);
+            buildClass.brewJava(mModuleName).writeTo(mFiler);
         } catch (Exception e) {
             e.printStackTrace();
             logMessage(e.getMessage());

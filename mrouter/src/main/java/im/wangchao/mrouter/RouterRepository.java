@@ -2,6 +2,7 @@ package im.wangchao.mrouter;
 
 import android.support.annotation.Nullable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +24,7 @@ import static im.wangchao.mrouter.RouterServiceCenter.NAME;
     private Map<String, List<IInterceptor>> mInterceptors = new HashMap<>();
     private Map<String, IProvider> mProviders = new HashMap<>();
 
-    private ILoader mLoader;
+    private List<ILoader> mLoaders = new ArrayList<>();
 
     private static RouterRepository instance(){
         if (sInstance == null){
@@ -40,11 +41,21 @@ import static im.wangchao.mrouter.RouterServiceCenter.NAME;
     static void init(){
         try {
             instance().mRouterServices.put(NAME, new RouterServiceCenter());
-            ILoader loader = (ILoader) Class.forName(Constants.getClassName(Constants.CLASS_ILOADER_NAME)).newInstance();
-            loader.loadInterceptors(instance().mInterceptors);
-            loader.loadRouterServices(instance().mRouterServices);
-            loader.loadProviders(instance().mProviders);
-            instance().mLoader = loader;
+            List<ILoader> list = new ArrayList<>();
+            ILoader APP_RouterLoader_AutoGeneration = (ILoader) Class.forName(Constants.getLoaderClassPath(Constants.APP_MODULE_NAME)).newInstance();
+            initLoad(APP_RouterLoader_AutoGeneration);
+            list.add(APP_RouterLoader_AutoGeneration);
+
+            // other loaders
+            List<String> loaderCls = APP_RouterLoader_AutoGeneration.loaderClass();
+            if (loaderCls != null){
+                ILoader itemLoader;
+                for (String cls: loaderCls){
+                    list.add(itemLoader = (ILoader) Class.forName(cls).newInstance());
+                    initLoad(itemLoader);
+                }
+            }
+            instance().mLoaders.addAll(list);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
@@ -52,6 +63,12 @@ import static im.wangchao.mrouter.RouterServiceCenter.NAME;
         } catch (InstantiationException e) {
             e.printStackTrace();
         }
+    }
+
+    private static void initLoad(ILoader loader){
+        loader.loadInterceptors(instance().mInterceptors);
+        loader.loadRouterServices(instance().mRouterServices);
+        loader.loadProviders(instance().mProviders);
     }
 
     static RouterServiceCenter getRouterServiceCenter(){
@@ -77,7 +94,12 @@ import static im.wangchao.mrouter.RouterServiceCenter.NAME;
     @Nullable private List<IInterceptor> getInterceptorsImpl(String name){
         List<IInterceptor> interceptors = mInterceptors.get(name);
         if (interceptors == null){
-            interceptors = mLoader.loadInterceptor(name, mInterceptors);
+            for (ILoader loader: mLoaders){
+                interceptors = loader.loadInterceptor(name, mInterceptors);
+                if (interceptors != null){
+                    return interceptors;
+                }
+            }
         }
         return interceptors;
     }
@@ -85,24 +107,39 @@ import static im.wangchao.mrouter.RouterServiceCenter.NAME;
     @Nullable private IRouterService getRouterServiceImpl(String name){
         IRouterService service = mRouterServices.get(name);
         if (service == null){
-            service = mLoader.loadRouterService(name, mRouterServices);
+            for (ILoader loader: mLoaders){
+                service = loader.loadRouterService(name, mRouterServices);
+                if (service != null){
+                    return service;
+                }
+            }
         }
         return service;
     }
 
     private String getTargetClassImpl(String routerName, String path){
         try {
-            return mLoader.getTargetClass(routerName, path);
-        } catch (Exception e){
-            return null;
-        }
+            String targetCls;
+            for (ILoader loader: mLoaders){
+                targetCls = loader.getTargetClass(routerName, path);
+                if (targetCls != null && !targetCls.isEmpty()){
+                    return targetCls;
+                }
+            }
+        } catch (Exception ignore){}
+        return null;
     }
 
     private IProvider getProviderImpl(String routerName, String providerName){
         final String key = routerName.concat("://").concat(providerName);
         IProvider provider = mProviders.get(key);
         if (provider == null){
-            provider = mLoader.loadProvider(key, mProviders);
+            for (ILoader loader: mLoaders){
+                provider = loader.loadProvider(key, mProviders);
+                if (provider != null){
+                    return provider;
+                }
+            }
         }
         return provider;
     }

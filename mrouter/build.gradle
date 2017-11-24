@@ -42,7 +42,9 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
 
-    api 'im.wangchao:mrouter-annotations:0.1.0'
+    api 'im.wangchao:mrouter-annotations:0.1.1'
+//    api project(':mrouter-annotations')
+//    annotationProcessor project(':mrouter-compiler')
 }
 
  apply from: 'https://raw.githubusercontent.com/motcwang/Utils/master/bintray-publish/bintray.gradle'
