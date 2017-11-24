@@ -17,6 +17,6 @@ apply plugin: 'im.wangchao.mrouter'
 ...
 dependencies {
     implementation 'im.wangchao:mrouter:0.1.2'
-    annotationProcessor 'im.wangchao:mrouter-compiler:0.1.1'
+    annotationProcessor 'im.wangchao:mrouter-compiler:0.1.2'
 }
 ```

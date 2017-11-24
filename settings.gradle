@@ -1,1 +1,1 @@
-include ':app', ':mrouter', ':mrouter-annotations', ':mrouter-compiler', ':mrouter-plugin'
+include ':app', ':mrouter', ':mrouter-annotations', ':mrouter-compiler', ':mrouter-plugin', ':example-module'

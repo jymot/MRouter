@@ -51,17 +51,16 @@ import static im.wangchao.mrouter.RouterServiceCenter.NAME;
             if (loaderCls != null){
                 ILoader itemLoader;
                 for (String cls: loaderCls){
-                    list.add(itemLoader = (ILoader) Class.forName(cls).newInstance());
+                    if (cls.endsWith(".class")){
+                        cls = cls.substring(0, cls.length() - 6);
+                    }
+                    list.add(itemLoader = (ILoader) Class.forName(cls.replaceAll("/", ".")).newInstance());
                     initLoad(itemLoader);
                 }
             }
             instance().mLoaders.addAll(list);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -118,15 +117,15 @@ import static im.wangchao.mrouter.RouterServiceCenter.NAME;
     }
 
     private String getTargetClassImpl(String routerName, String path){
-        try {
-            String targetCls;
-            for (ILoader loader: mLoaders){
+        String targetCls = null;
+        for (ILoader loader : mLoaders) {
+            try {
                 targetCls = loader.getTargetClass(routerName, path);
-                if (targetCls != null && !targetCls.isEmpty()){
-                    return targetCls;
-                }
+            } catch (Exception ignore) {}
+            if (targetCls != null && !targetCls.isEmpty()) {
+                return targetCls;
             }
-        } catch (Exception ignore){}
+        }
         return null;
     }
 

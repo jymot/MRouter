@@ -50,6 +50,7 @@ public class RouterLoaderProcessor extends AbstractProcessor {
         Map<String, String> options = processingEnv.getOptions();
         if (options != null && options.size() != 0) {
             mModuleName = options.get("moduleName");
+            mModuleName =  mModuleName.replaceAll("[^0-9a-zA-Z_]+", "");
             String appModule = options.getOrDefault("appModule", "0");
             if ("1".equals(appModule)){
                 mModuleName = APP_MODULE_NAME;

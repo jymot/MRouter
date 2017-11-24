@@ -18,17 +18,17 @@ import im.wangchao.mrouter.annotations.Interceptor;
 public class GlobalLevelOneInterceptor implements IInterceptor{
 
     @Override public RouteIntent pushInterceptor(Context context, PushChain chain, int requestCode) {
-        Log.e("wcwcwc", "Global One Interceptor: push()");
+        Log.e("wcwcwc", "Global One Interceptor: push()  priority = 1");
         return chain.proceed(context, chain.route(), requestCode);
     }
 
     @Override public RouteIntent popInterceptor(Context context, PopChain chain, int resultCode) {
-        Log.e("wcwcwc", "Global One Interceptor: pop()");
+        Log.e("wcwcwc", "Global One Interceptor: pop()  priority = 1");
         return chain.proceed(context, chain.route(), resultCode);
     }
 
     @Override public RouteIntent requestInterceptor(RequestChain chain, RouterCallback callback) {
-        Log.e("wcwcwc", "Global One Interceptor: request()");
+        Log.e("wcwcwc", "Global One Interceptor: request()  priority = 1");
         return chain.proceed(chain.route(), callback);
     }
 }
