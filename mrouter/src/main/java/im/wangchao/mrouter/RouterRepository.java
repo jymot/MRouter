@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import im.wangchao.mrouter.annotations.Constants;
 
@@ -22,6 +23,7 @@ import static im.wangchao.mrouter.RouterServiceCenter.NAME;
 
     private Map<String, IRouterService> mRouterServices = new HashMap<>();
     private Map<String, List<IInterceptor>> mInterceptors = new HashMap<>();
+    private Map<String, Map<Integer, List<IInterceptor>>> mInterceptorsOrigin = new HashMap<>();
     private Map<String, IProvider> mProviders = new HashMap<>();
 
     private List<ILoader> mLoaders = new ArrayList<>();
@@ -65,9 +67,27 @@ import static im.wangchao.mrouter.RouterServiceCenter.NAME;
     }
 
     private static void initLoad(ILoader loader){
-        loader.loadInterceptors(instance().mInterceptors);
+        loadInterceptors(loader, instance().mInterceptorsOrigin, instance().mInterceptors);
         loader.loadRouterServices(instance().mRouterServices);
         loader.loadProviders(instance().mProviders);
+    }
+
+    private static void loadInterceptors(ILoader loader,
+                                         Map<String, Map<Integer, List<IInterceptor>>> origin,
+                                         Map<String, List<IInterceptor>> interceptors){
+        loader.loadInterceptors(origin);
+        for (Map.Entry<String, Map<Integer, List<IInterceptor>>> entry: origin.entrySet()){
+            List<IInterceptor> list = new ArrayList<>();
+
+            Map<Integer, List<IInterceptor>> sortMap = new TreeMap<>((l, r) -> l - r);
+            sortMap.putAll(entry.getValue());
+
+            for (int key: sortMap.keySet()){
+                list.addAll(sortMap.get(key));
+            }
+
+            interceptors.put(entry.getKey(), list);
+        }
     }
 
     static RouterServiceCenter getRouterServiceCenter(){
@@ -94,11 +114,9 @@ import static im.wangchao.mrouter.RouterServiceCenter.NAME;
         List<IInterceptor> interceptors = mInterceptors.get(name);
         if (interceptors == null){
             for (ILoader loader: mLoaders){
-                interceptors = loader.loadInterceptor(name, mInterceptors);
-                if (interceptors != null){
-                    return interceptors;
-                }
+                loadInterceptors(loader, mInterceptorsOrigin, mInterceptors);
             }
+            interceptors = mInterceptors.get(name);
         }
         return interceptors;
     }

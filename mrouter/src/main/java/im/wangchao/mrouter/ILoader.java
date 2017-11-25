@@ -19,7 +19,7 @@ public interface ILoader {
      * 加载所有 IInterceptor 到目标集合
      * @param target 需要加载数据的数据集，key：RouterService Name
      */
-    void loadInterceptors(Map<String, List<IInterceptor>> target);
+    void loadInterceptors(Map<String, Map<Integer, List<IInterceptor>>> target);
 
     /**
      * 加载所有 IRouterService 到目标集合
@@ -39,7 +39,7 @@ public interface ILoader {
      * @param target 需要加载数据的数据集
      * @return 当前要加载的所有 IInterceptor
      */
-    List<IInterceptor> loadInterceptor(String name, Map<String, List<IInterceptor>> target);
+    Map<Integer, List<IInterceptor>> loadInterceptor(String name, Map<String, Map<Integer, List<IInterceptor>>> target);
 
     /**
      * 加载 IRouterService 到目标集合

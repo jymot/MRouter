@@ -11,7 +11,6 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +57,7 @@ import static im.wangchao.mrouter.annotations.Constants.getLoaderClassName;
 
     private Map<String, Map<String, String>> mRoutes = new HashMap<>();
     private Map<String, String> mRouterServices = new HashMap<>();
-    private Map<String, List<InterceptorPriority>> mInterceptors = new HashMap<>();
+    private Map<String, Map<Integer, List<String>>> mInterceptors = new HashMap<>();
     private Map<String, String> mProviders = new HashMap<>();
 
     private Elements mElementUtils;
@@ -77,8 +76,9 @@ import static im.wangchao.mrouter.annotations.Constants.getLoaderClassName;
     }
 
     void putInterceptor(String routerName, int priority, String targetClass){
-        List<InterceptorPriority> list = mInterceptors.computeIfAbsent(routerName, s -> new ArrayList<>());
-        list.add(new InterceptorPriority(priority, targetClass));
+        Map<Integer, List<String>> map = mInterceptors.computeIfAbsent(routerName, s -> new HashMap<>());
+        List<String> list = map.computeIfAbsent(priority, integer -> new ArrayList<>());
+        list.add(targetClass);
     }
 
     void putProvider(String key, String targetClass) {
@@ -101,17 +101,18 @@ import static im.wangchao.mrouter.annotations.Constants.getLoaderClassName;
 
         addMethod(result);
 
-
-
         return result.build();
     }
 
     private void addFields(TypeSpec.Builder result){
-        // private Map<String, List<String>> mInterceptors = new HashMap<>();
+        // private Map<String, Map<Integer, List<String>>> mInterceptors = new HashMap<>();
         TypeName interceptorMap = ParameterizedTypeName.get(
                 ClassName.get(Map.class),
                 ClassName.get(String.class),
-                ParameterizedTypeName.get(ClassName.get(List.class), ClassName.get(String.class))
+                ParameterizedTypeName.get(
+                        ClassName.get(Map.class),
+                        ClassName.get(Integer.class),
+                        ParameterizedTypeName.get(List.class, String.class))
         );
         FieldSpec.Builder interceptorBuilder = FieldSpec.builder(interceptorMap, FIELD_INTERCEPTORS, Modifier.PRIVATE, Modifier.FINAL);
         interceptorBuilder.initializer("new $T<>()", HashMap.class);
@@ -156,32 +157,48 @@ import static im.wangchao.mrouter.annotations.Constants.getLoaderClassName;
                 .addModifiers(Modifier.PUBLIC);
 
         // load all data
+        constructor.addComment("Load RouterService");
         mRouterServices.forEach((key, value) -> constructor.addStatement("$L.put($S, $S)", FIELD_ROUTERSERVICES, key, value));
+        constructor.addCode(CodeBlock.builder().add("\n").build());
+
+        constructor.addComment("Load Routes");
         mRoutes.forEach((key, value) -> {
-            constructor.addStatement("$T<String, String> $LMap = new $T<>()", Map.class, key, HashMap.class);
-            value.forEach((path, cls) -> constructor.addStatement("$LMap.put($S, $S)", key, path, cls));
-            constructor.addStatement("$L.put($S, $LMap)", FIELD_ROUTES, key, key);
+            constructor.addStatement("$T<String, String> $LMapRoutes = new $T<>()", Map.class, key, HashMap.class);
+            value.forEach((path, cls) -> constructor.addStatement("$LMapRoutes.put($S, $S)", key, path, cls));
+            constructor.addStatement("$L.put($S, $LMapRoutes)", FIELD_ROUTES, key, key);
         });
+        constructor.addCode(CodeBlock.builder().add("\n").build());
+
+        constructor.addComment("Load Interceptor");
         mInterceptors.forEach((key, value) -> {
-            constructor.addStatement("$T<String> $LList = new $T<>()", List.class, key, ArrayList.class);
-            // sorted
-            value.sort(Comparator.comparing(InterceptorPriority::getPriority));
-            value.forEach(item -> constructor.addStatement("$LList.add($S)", key, item.cls));
-            constructor.addStatement("$L.put($S, $LList)", FIELD_INTERCEPTORS, key, key);
+            constructor.addStatement("$T<$T, $T> $LMapInterceptors = new $T<>()",
+                    Map.class, Integer.class, ParameterizedTypeName.get(List.class, String.class), key, HashMap.class);
+
+            value.forEach((index, list) -> {
+                constructor.addStatement("$T<String> $LList$LInterceptors = new $T<>()", List.class, key, index, ArrayList.class);
+                list.forEach(item -> constructor.addStatement("$LList$LInterceptors.add($S)", key, index, item));
+                constructor.addStatement("$LMapInterceptors.put($L, $LList$LInterceptors)", key, index, key, index);
+            });
+
+            constructor.addStatement("$L.put($S, $LMapInterceptors)", FIELD_INTERCEPTORS, key, key);
         });
+        constructor.addCode(CodeBlock.builder().add("\n").build());
+
+        constructor.addComment("Load Provider");
         mProviders.forEach((key, value) -> constructor.addStatement("$L.put($S, $S)", FIELD_PROVIDERS, key, value));
 
         result.addMethod(constructor.build());
     }
 
     private void addMethod(TypeSpec.Builder result){
-        // Map<String, List<IInterceptor>>
+        // Map<String, Map<Integer, List<IInterceptor>>>
         ParameterizedTypeName loadInterceptorsParams = ParameterizedTypeName.get(
                 ClassName.get(Map.class),
                 ClassName.get(String.class),
                 ParameterizedTypeName.get(
-                        ClassName.get(List.class),
-                        ClassName.get(mElementUtils.getTypeElement(CLASS_IINTERCEPTOR))
+                        ClassName.get(Map.class),
+                        ClassName.get(Integer.class),
+                        ParameterizedTypeName.get(ClassName.get(List.class), ClassName.get(mElementUtils.getTypeElement(CLASS_IINTERCEPTOR)))
                 )
         );
         // Map<String, IRouterService>
@@ -222,7 +239,7 @@ import static im.wangchao.mrouter.annotations.Constants.getLoaderClassName;
     }
 
     /**
-     * void loadInterceptors(Map<String, List<IInterceptor>> target){
+     * void loadInterceptors(Map<String, Map<Integer, List<IInterceptor>>> target){
      *     Set<String> names = mInterceptors.keySet();
      *     for (String name: names){
      *        loadInterceptor(name, target);
@@ -292,44 +309,86 @@ import static im.wangchao.mrouter.annotations.Constants.getLoaderClassName;
     }
 
     /**
-     * List<IInterceptor> loadInterceptor(String name, Map<String, List<IInterceptor>> target){
-     *     List<IInterceptor> list = new ArrayList<>();
+     * Map<Integer, List<IInterceptor>> loadInterceptor(String name, Map<String, Map<Integer, List<IInterceptor>>> target){
+     *      Map<Integer, List<IInterceptor>> map = target.get(name);
+     *      if (map == null){
+     *          map = new HashMap<>();
+     *          target.put(name, map);
+     *      }
      *
-     *     List<String> interceptorClassName = mInterceptors.get(name);
-     *     if (interceptorClassName == null || interceptorClassName.size() == 0){
-     *          return list;
-     *     }
-     *     try {
-     *          for (String cls: interceptorClassName){
-     *              list.add((IInterceptor) Class.forName(cls).newInstance());
+     *      Map<Integer, List<String>> orderMap = mInterceptors.get(name);
+     *      if (orderMap == null || orderMap.size() == 0){
+     *          return map;
+     *      }
+     *      int index;
+     *      List<String> interceptorsCls;
+     *      List<IInterceptor> interceptors;
+     *      for (Map.Entry<Integer, List<String>> entry: orderMap.entrySet()){
+     *          index = entry.getKey();
+     *          interceptors = map.get(index);
+     *          if (interceptors == null){
+     *              interceptors = new ArrayList<>();
+     *              map.put(index, interceptors);
      *          }
-     *          target.put(name, list);
-     *     } catch (Exception ignore){}
+     *          interceptorsCls = entry.getValue();
+     *          if (interceptorsCls == null){
+     *              continue;
+     *          }
+     *          for (String cls: interceptorsCls){
+     *              try {
+     *                  interceptors.add((IInterceptor) Class.forName(cls).newInstance());
+     *              } catch (Exception ignore){}
+     *          }
+     *      }
      *
-     *     return list;
+     *      return map;
      * }
      */
     private void loadInterceptor(TypeSpec.Builder result, ParameterizedTypeName loadInterceptorsParams) {
         CodeBlock.Builder codeBlock = CodeBlock.builder();
-        codeBlock.addStatement("$T<$T> list = new $T<>()", List.class, ClassName.get(mElementUtils.getTypeElement(CLASS_IINTERCEPTOR)), ArrayList.class)
-                 .addStatement("$T<$T> interceptorClassName = $L.get(name)", List.class, String.class, FIELD_INTERCEPTORS)
-                 .add("if (interceptorClassName == null || interceptorClassName.size() == 0) {\n")
-                 .addStatement("return list")
+        codeBlock.addStatement("$T<$T, $T> map = target.get(name)",
+                Map.class, Integer.class,
+                ParameterizedTypeName.get(ClassName.get(List.class), ClassName.get(mElementUtils.getTypeElement(CLASS_IINTERCEPTOR))))
+                 .add("if (map == null){\n")
+                 .addStatement("map = new $T<>()", HashMap.class)
+                 .addStatement("target.put(name, map)")
                  .add("}\n")
+                 .addStatement("$T<$T, $T> orderMap = $L.get(name)",
+                         Map.class, Integer.class, ParameterizedTypeName.get(List.class, String.class), FIELD_INTERCEPTORS)
+                 .add("if (orderMap == null || orderMap.size() == 0) {\n")
+                 .addStatement("return map")
+                 .add("}\n")
+                 .addStatement("int index")
+                 .addStatement("$T<$T> interceptorsCls", List.class, String.class)
+                 .addStatement("$T<$T> interceptors", List.class, ClassName.get(mElementUtils.getTypeElement(CLASS_IINTERCEPTOR)))
+                 .beginControlFlow("for($T<$T, $T> entry: orderMap.entrySet())",
+                         Map.Entry.class, Integer.class, ParameterizedTypeName.get(List.class, String.class))
+                 .addStatement("index = entry.getKey()")
+                 .addStatement("interceptors = map.get(index)")
+                 .add("if (interceptors == null) {\n")
+                 .addStatement("interceptors = new $T<>()", ArrayList.class)
+                 .addStatement("map.put(index, interceptors)")
+                 .add("}\n")
+                 .addStatement("interceptorsCls = entry.getValue()")
+                 .add("if (interceptorsCls == null) {\n")
+                 .addStatement("continue")
+                 .add("}\n")
+                 .beginControlFlow("for (String cls: interceptorsCls)\n")
                  .add("try {\n")
-                 .beginControlFlow("for (String cls: interceptorClassName)")
-                 .addStatement("list.add(($T) $T.forName(cls).newInstance())", ClassName.get(mElementUtils.getTypeElement(CLASS_IINTERCEPTOR)), Class.class)
-                 .endControlFlow()
-                 .addStatement("target.put(name, list)")
+                 .addStatement("interceptors.add(($T) $T.forName(cls).newInstance())", ClassName.get(mElementUtils.getTypeElement(CLASS_IINTERCEPTOR)), Class.class)
                  .add("} catch ($T ignore){}\n", Exception.class)
-                 .addStatement("return list");
+                 .endControlFlow()
+                 .endControlFlow()
+                 .addStatement("return map");
 
         MethodSpec.Builder loadInterceptor = MethodSpec.methodBuilder("loadInterceptor")
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(ParameterSpec.builder(ClassName.get(String.class), "name").build())
                 .addParameter(ParameterSpec.builder(loadInterceptorsParams, "target").build())
-                .returns(ParameterizedTypeName.get(ClassName.get(List.class), ClassName.get(mElementUtils.getTypeElement(CLASS_IINTERCEPTOR))))
+                .returns(ParameterizedTypeName.get(
+                        ClassName.get(Map.class), ClassName.get(Integer.class),
+                        ParameterizedTypeName.get(ClassName.get(List.class), ClassName.get(mElementUtils.getTypeElement(CLASS_IINTERCEPTOR)))))
                 .addCode(codeBlock.build());
         result.addMethod(loadInterceptor.build());
     }

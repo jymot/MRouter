@@ -14,12 +14,12 @@ import java.util.Set;
  */
 public class ILoaderImpl implements ILoader{
     private static final List<String> mLoaders = new ArrayList();
-    private Map<String, List<String>> mInterceptors = new HashMap<>();
+    private Map<String, Map<Integer, List<String>>> mInterceptors = new HashMap<>();
     private Map<String, String> mRouterServices = new HashMap<>();
     private Map<String, Map<String, String>> mRoutes = new HashMap<>();
     private Map<String, String> mProviders = new HashMap<>();
 
-    @Override public void loadInterceptors(Map<String, List<IInterceptor>> target) {
+    @Override public void loadInterceptors(Map<String, Map<Integer, List<IInterceptor>>> target) {
         Set<String> names = mInterceptors.keySet();
         for (String name: names){
             loadInterceptor(name, target);
@@ -40,21 +40,39 @@ public class ILoaderImpl implements ILoader{
         }
     }
 
-    @Override public List<IInterceptor> loadInterceptor(String name, Map<String, List<IInterceptor>> target) {
-        List<IInterceptor> list = new ArrayList<>();
-
-        List<String> interceptorClassName = mInterceptors.get(name);
-        if (interceptorClassName == null || interceptorClassName.size() == 0){
-            return list;
+    @Override public Map<Integer, List<IInterceptor>> loadInterceptor(String name, Map<String, Map<Integer, List<IInterceptor>>> target) {
+        Map<Integer, List<IInterceptor>> map = target.get(name);
+        if (map == null){
+            map = new HashMap<>();
+            target.put(name, map);
         }
-        try {
-            for (String cls: interceptorClassName){
-                list.add((IInterceptor) Class.forName(cls).newInstance());
-            }
-            target.put(name, list);
-        } catch (Exception ignore){}
 
-        return list;
+        Map<Integer, List<String>> orderMap = mInterceptors.get(name);
+        if (orderMap == null || orderMap.size() == 0){
+            return map;
+        }
+        int index;
+        List<String> interceptorsCls;
+        List<IInterceptor> interceptors;
+        for (Map.Entry<Integer, List<String>> entry: orderMap.entrySet()){
+            index = entry.getKey();
+            interceptors = map.get(index);
+            if (interceptors == null){
+                interceptors = new ArrayList<>();
+                map.put(index, interceptors);
+            }
+            interceptorsCls = entry.getValue();
+            if (interceptorsCls == null){
+                continue;
+            }
+            for (String cls: interceptorsCls){
+                try {
+                    interceptors.add((IInterceptor) Class.forName(cls).newInstance());
+                } catch (Exception ignore){}
+            }
+        }
+
+        return map;
     }
 
     @Override public IRouterService loadRouterService(String name, Map<String, IRouterService> target) {

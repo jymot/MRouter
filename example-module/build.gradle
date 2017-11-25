@@ -35,6 +35,8 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
 
 //    compileOnly 'im.wangchao:mrouter:0.1.3'
+//    annotationProcessor 'im.wangchao:mrouter-compiler:0.1.2'
+
     compileOnly project(':mrouter')
-    annotationProcessor 'im.wangchao:mrouter-compiler:0.1.2'
+    annotationProcessor project(':mrouter-compiler')
 }
