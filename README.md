@@ -50,3 +50,75 @@ dependencies {
     annotationProcessor 'im.wangchao:mrouter-compiler:0.1.3'
 }
 ```
+
+## How to use
+### 1.Initialization
+```java
+public class App extend Application {
+
+    ...
+
+    @Override public void onCreate() {
+        super.onCreate();
+        Router.init();
+    }
+
+    ...
+}
+```
+### 2.Configuration
+#### 2.1 Route
+**Use Custom RouterService**
+```java
+@Route(path = "/one", routerName = "one")
+public class ModuleOneActivity extends AppCompatActivity {
+}
+```
+**Use Default RouterService**
+```java
+@Route(path = "/two")
+public class ModuleTwoActivity extends AppCompatActivity {
+}
+```
+#### 2.2 RouterService
+```java
+@RouterService("one")
+public class ModuleOneService implements IRouterService {
+}
+```
+#### 2.3 Interceptor
+**Global Interceptor**
+```java
+@Interceptor(priority = 1)
+public class GlobalLevelOneInterceptor implements IInterceptor{
+```
+**Child Interceptor**
+```java
+@Interceptor(routerName = "one")
+public class OneInterceptor implements IInterceptor {
+```
+#### 2.4 Provider
+```java
+@Provider(name = "test", routerName = "two")
+public class ModuleTwoProvider implements IProvider {
+}
+```
+### 3.Use
+#### 3.1 Push/Pop
+```java
+// push to Activity that configure @Route(path = "/two")
+Router.push(this, "router:///two"));
+...
+// push to Activity that configure @Route(path = "/one", routerName = "one")
+Router.push(this, "one:///one")
+...
+// Pop
+Router.pop(this);
+```
+#### 3.2 Request
+```java
+Router.request("two://test", route -> {
+    String result = route.bundle().getString("result");
+    Log.e("wcwcwc", "result =>> " + result);
+});
+```
