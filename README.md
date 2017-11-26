@@ -67,7 +67,7 @@ public class App extend Application {
 }
 ```
 ### 2.Configuration
-#### 2.1 Route
+#### 2.1 Register Route
 **Use Custom RouterService**
 ```java
 @Route(path = "/one", routerName = "one")
@@ -80,13 +80,13 @@ public class ModuleOneActivity extends AppCompatActivity {
 public class ModuleTwoActivity extends AppCompatActivity {
 }
 ```
-#### 2.2 RouterService
+#### 2.2 Register RouterService
 ```java
 @RouterService("one")
 public class ModuleOneService implements IRouterService {
 }
 ```
-#### 2.3 Interceptor
+#### 2.3 Register Interceptor
 **Global Interceptor**
 ```java
 @Interceptor(priority = 1)
@@ -97,7 +97,7 @@ public class GlobalLevelOneInterceptor implements IInterceptor{
 @Interceptor(routerName = "one")
 public class OneInterceptor implements IInterceptor {
 ```
-#### 2.4 Provider
+#### 2.4 Register Provider
 ```java
 @Provider(name = "test", routerName = "two")
 public class ModuleTwoProvider implements IProvider {
