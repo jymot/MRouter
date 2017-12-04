@@ -22,6 +22,8 @@ public final class RouteIntent {
     public static final String DEFAULT_POP_PATH = "/finish";
     public static final String DEFAULT_POP_URI = Constants.ROUTER_SERVICE_NAME.concat("://").concat(DEFAULT_POP_PATH);
 
+    public static final int FLAG_ACTIVITY_PUSH_AND_POP = -2;
+
     // uri
     private final Uri mUri;
     // params
@@ -89,7 +91,7 @@ public final class RouteIntent {
         }
         intent.putExtras(mBundle);
         // Set flags.
-        if (-1 != mFlags) {
+        if (-1 != mFlags && FLAG_ACTIVITY_PUSH_AND_POP != mFlags) {
             intent.setFlags(mFlags);
         } else if (!(context instanceof Activity)) {
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

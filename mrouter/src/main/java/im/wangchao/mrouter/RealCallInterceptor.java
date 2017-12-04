@@ -9,6 +9,7 @@ import android.support.v4.app.ActivityCompat;
 import android.text.TextUtils;
 
 import static im.wangchao.mrouter.RouteIntent.DEFAULT_POP_URI;
+import static im.wangchao.mrouter.RouteIntent.FLAG_ACTIVITY_PUSH_AND_POP;
 
 /**
  * <p>Description  : RealCallInterceptor.</p>
@@ -27,6 +28,10 @@ import static im.wangchao.mrouter.RouteIntent.DEFAULT_POP_URI;
         } else {
             ActivityCompat.startActivity(context, intent, null);
         }
+        if (route.flags() == FLAG_ACTIVITY_PUSH_AND_POP && context instanceof Activity){
+            ((Activity) context).finish();
+        }
+
         return null;
     }
 
