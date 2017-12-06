@@ -4,7 +4,7 @@ import java.util.List;
 
 import im.wangchao.mrouter.IInterceptor;
 import im.wangchao.mrouter.RouteIntent;
-import im.wangchao.mrouter.RouterCallback;
+import im.wangchao.mrouter.RouterRequestCallback;
 
 /**
  * <p>Description  : RealInterceptorRequestChain.</p>
@@ -31,7 +31,7 @@ public final class RealInterceptorRequestChain implements IInterceptor.RequestCh
         return mRoute;
     }
 
-    @Override public RouteIntent proceed(RouteIntent route, RouterCallback callback) {
+    @Override public RouteIntent proceed(RouteIntent route, RouterRequestCallback callback) {
         if (mIndex >= mSize) throw new AssertionError();
 
         // Call the next interceptor in the chain.

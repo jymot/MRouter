@@ -61,7 +61,7 @@ import static im.wangchao.mrouter.RouteIntent.FLAG_ACTIVITY_PUSH_AND_POP;
         return null;
     }
 
-    @Override public RouteIntent requestInterceptor(RequestChain chain, RouterCallback callback) {
+    @Override public RouteIntent requestInterceptor(RequestChain chain, RouterRequestCallback callback) {
         final RouteIntent route = chain.route();
         final Uri uri = route.uri();
         // Scheme is RouterService name.

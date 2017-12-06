@@ -77,7 +77,7 @@ import im.wangchao.mrouter.internal.RealInterceptorRequestChain;
         chain.proceed(context, route, resultCode);
     }
 
-    @Override public void onReceiver(RouteIntent route, RouterCallback callback) {
+    @Override public void onReceiver(RouteIntent route, RouterRequestCallback callback) {
         final Uri uri = route.uri();
         // Scheme is RouterService name.
         final String scheme = uri.getScheme();

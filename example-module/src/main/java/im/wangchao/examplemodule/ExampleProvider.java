@@ -2,7 +2,7 @@ package im.wangchao.examplemodule;
 
 import im.wangchao.mrouter.IProvider;
 import im.wangchao.mrouter.RouteIntent;
-import im.wangchao.mrouter.RouterCallback;
+import im.wangchao.mrouter.RouterRequestCallback;
 import im.wangchao.mrouter.annotations.Provider;
 
 /**
@@ -13,7 +13,7 @@ import im.wangchao.mrouter.annotations.Provider;
  */
 @Provider(name = "test", routerName = "example")
 public class ExampleProvider implements IProvider{
-    @Override public void onReceiver(RouteIntent route, RouterCallback callback) {
+    @Override public void onReceiver(RouteIntent route, RouterRequestCallback callback) {
         callback.onResponse(route.newBuilder().addParameter("result", "example-success").build());
     }
 }

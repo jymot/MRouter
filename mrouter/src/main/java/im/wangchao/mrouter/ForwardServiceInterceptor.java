@@ -26,7 +26,7 @@ import android.content.Context;
         return null;
     }
 
-    @Override public RouteIntent requestInterceptor(RequestChain chain, RouterCallback callback) {
+    @Override public RouteIntent requestInterceptor(RequestChain chain, RouterRequestCallback callback) {
         return null;
     }
 }
