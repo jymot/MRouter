@@ -5,7 +5,9 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import im.wangchao.mrouter.RouteIntent;
 import im.wangchao.mrouter.Router;
+import im.wangchao.mrouter.RouterCallback;
 import im.wangchao.mrouter.annotations.Route;
 
 /**
@@ -21,9 +23,15 @@ public class ModuleOneActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_module_one);
         findViewById(R.id.testBtn).setOnClickListener(v -> {
-            Router.request("two://test", route -> {
-                String result = route.bundle().getString("result");
-                Log.e("wcwcwc", "result =>> " + result);
+            Router.request("two://test", new RouterCallback() {
+                @Override public void onSuccess(RouteIntent route) {
+                    String result = route.bundle().getString("result");
+                    Log.e("wcwcwc", "result =>> " + result);
+                }
+
+                @Override public void onFailure(RouteIntent route, Exception e) {
+
+                }
             });
         });
     }

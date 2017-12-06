@@ -14,5 +14,5 @@ public interface IProvider {
      * @param route RouteIntent
      * @param callback 回调函数
      */
-    void onReceiver(RouteIntent route, RouterRequestCallback callback);
+    void onReceiver(RouteIntent route, RouterCallback callback);
 }

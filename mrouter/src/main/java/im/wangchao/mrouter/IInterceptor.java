@@ -31,7 +31,7 @@ public interface IInterceptor {
      * @param chain request 拦截链
      * @param callback 回调函数
      */
-    RouteIntent requestInterceptor(RequestChain chain, RouterRequestCallback callback);
+    RouteIntent requestInterceptor(RequestChain chain, RouterCallback callback);
 
     interface PushChain {
 
@@ -70,6 +70,6 @@ public interface IInterceptor {
          * @param route RouteIntent
          * @param callback 回调函数
          */
-        RouteIntent proceed(RouteIntent route, RouterRequestCallback callback);
+        RouteIntent proceed(RouteIntent route, RouterCallback callback);
     }
 }

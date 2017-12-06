@@ -78,7 +78,7 @@ public final class Router {
         request(uri, null, null);
     }
 
-    public static void request(String uri, RouterRequestCallback callback){
+    public static void request(String uri, RouterCallback callback){
         request(uri, null, callback);
     }
 
@@ -86,7 +86,7 @@ public final class Router {
         request(uri, bundle, null);
     }
 
-    public static void request(String uri, Bundle bundle, RouterRequestCallback callback){
+    public static void request(String uri, Bundle bundle, RouterCallback callback){
         request(RouteIntent.of(uri, bundle), callback);
     }
 
@@ -120,7 +120,7 @@ public final class Router {
      * @param route RouteIntent
      * @param callback RouterCallback
      */
-    public static void request(RouteIntent route, RouterRequestCallback callback){
+    public static void request(RouteIntent route, RouterCallback callback){
         check();
         RouterRepository.getRouterServiceCenter().onReceiver(route, callback);
     }

@@ -5,7 +5,7 @@ import android.util.Log;
 
 import im.wangchao.mrouter.IInterceptor;
 import im.wangchao.mrouter.RouteIntent;
-import im.wangchao.mrouter.RouterRequestCallback;
+import im.wangchao.mrouter.RouterCallback;
 import im.wangchao.mrouter.annotations.Interceptor;
 
 /**
@@ -27,7 +27,7 @@ public class GlobalLevelOneInterceptor implements IInterceptor{
         return chain.proceed(context, chain.route(), resultCode);
     }
 
-    @Override public RouteIntent requestInterceptor(RequestChain chain, RouterRequestCallback callback) {
+    @Override public RouteIntent requestInterceptor(RequestChain chain, RouterCallback callback) {
         Log.e("wcwcwc", "Global One Interceptor: request()  priority = 1");
         return chain.proceed(chain.route(), callback);
     }
