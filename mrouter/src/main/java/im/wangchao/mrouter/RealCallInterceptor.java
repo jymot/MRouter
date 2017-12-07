@@ -32,6 +32,9 @@ import static im.wangchao.mrouter.RouteIntent.FLAG_ACTIVITY_PUSH_AND_POP;
             ((Activity) context).finish();
         }
 
+        if (callback != null){
+            callback.onSuccess(route);
+        }
         return null;
     }
 
@@ -57,6 +60,10 @@ import static im.wangchao.mrouter.RouteIntent.FLAG_ACTIVITY_PUSH_AND_POP;
                 intent.setComponent(componentName);
             }
             context.startActivity(intent);
+        }
+
+        if (callback != null){
+            callback.onSuccess(route);
         }
         return null;
     }

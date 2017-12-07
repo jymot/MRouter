@@ -29,6 +29,10 @@ public class ModuleOneService implements IRouterService {
         } else {
             ActivityCompat.startActivity(context, intent, null);
         }
+
+        if (callback != null){
+            callback.onSuccess(route);
+        }
     }
 
     @Override public void pop(Context context, RouteIntent route, int resultCode, RouterCallback callback) {

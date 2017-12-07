@@ -37,6 +37,14 @@ public class ModuleOneActivity extends AppCompatActivity {
     }
 
     @Override public void onBackPressed() {
-        Router.pop(this);
+        Router.pop(this, new RouterCallback() {
+            @Override public void onSuccess(RouteIntent route) {
+                Log.e("wcwcwc", "pop success: " + route.uri());
+            }
+
+            @Override public void onFailure(RouteIntent route, Exception e) {
+
+            }
+        });
     }
 }

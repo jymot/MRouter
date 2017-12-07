@@ -22,86 +22,111 @@ import im.wangchao.mrouter.internal.RealInterceptorRequestChain;
     static final String NAME = Constants.ROUTER_SERVICE_NAME;
 
     @Override public void push(Context context, RouteIntent route, int requestCode, RouterCallback callback) {
-        final Uri uri = route.uri();
-        // Scheme is RouterService name.
-        final String scheme = uri.getScheme();
-        final String path = uri.getPath();
+        try {
+            final Uri uri = route.uri();
+            // Scheme is RouterService name.
+            final String scheme = uri.getScheme();
+            final String path = uri.getPath();
 
-        // Load target class
-        route = route.newBuilder().targetClass(RouterRepository.getTargetClass(scheme, path)).build();
+            // Load target class
+            route = route.newBuilder().targetClass(RouterRepository.getTargetClass(scheme, path)).build();
 
-        List<IInterceptor> interceptors = new ArrayList<>();
+            List<IInterceptor> interceptors = new ArrayList<>();
 
-        // Global interceptor.
-        List<IInterceptor> globalInterceptor = RouterRepository.getInterceptors(NAME);
-        if (!isListEmpty(globalInterceptor)){
-            interceptors.addAll(globalInterceptor);
-        }
+            // Global interceptor.
+            List<IInterceptor> globalInterceptor = RouterRepository.getInterceptors(NAME);
+            if (!isListEmpty(globalInterceptor)){
+                interceptors.addAll(globalInterceptor);
+            }
 
-        if (!TextUtils.equals(scheme, NAME)){
-            // exec other RouterService
-            if (pushServiceProceed(interceptors, scheme, context, route, requestCode, callback)){
-                return;
+            if (!TextUtils.equals(scheme, NAME)){
+                // exec other RouterService
+                if (pushServiceProceed(interceptors, scheme, context, route, requestCode, callback)){
+                    return;
+                }
+            }
+
+            interceptors.add(new RealCallInterceptor());
+
+            RealInterceptorPushChain chain = new RealInterceptorPushChain(interceptors, 0, route);
+            chain.proceed(context, route, requestCode, callback);
+        } catch (Exception e){
+            if (callback != null){
+                callback.onFailure(route, e);
+            } else {
+                throw e;
             }
         }
 
-        interceptors.add(new RealCallInterceptor());
-
-        RealInterceptorPushChain chain = new RealInterceptorPushChain(interceptors, 0, route);
-        chain.proceed(context, route, requestCode, callback);
     }
 
     @Override public void pop(Context context, RouteIntent route, int resultCode, RouterCallback callback) {
-        final Uri uri = route.uri();
-        // Scheme is RouterService name.
-        final String scheme = uri.getScheme();
+        try {
+            final Uri uri = route.uri();
+            // Scheme is RouterService name.
+            final String scheme = uri.getScheme();
 
-        List<IInterceptor> interceptors = new ArrayList<>();
+            List<IInterceptor> interceptors = new ArrayList<>();
 
-        // Global interceptor.
-        List<IInterceptor> globalInterceptor = RouterRepository.getInterceptors(NAME);
-        if (!isListEmpty(globalInterceptor)){
-            interceptors.addAll(globalInterceptor);
-        }
+            // Global interceptor.
+            List<IInterceptor> globalInterceptor = RouterRepository.getInterceptors(NAME);
+            if (!isListEmpty(globalInterceptor)){
+                interceptors.addAll(globalInterceptor);
+            }
 
-        if (!TextUtils.equals(scheme, NAME)){
-            // exec other RouterService
-            if (popServiceProceed(interceptors, scheme, context, route, resultCode, callback)){
-                return;
+            if (!TextUtils.equals(scheme, NAME)){
+                // exec other RouterService
+                if (popServiceProceed(interceptors, scheme, context, route, resultCode, callback)){
+                    return;
+                }
+            }
+
+            interceptors.add(new RealCallInterceptor());
+
+            RealInterceptorPopChain chain = new RealInterceptorPopChain(interceptors, 0, route);
+            chain.proceed(context, route, resultCode, callback);
+        } catch (Exception e){
+            if (callback != null){
+                callback.onFailure(route, e);
+            } else {
+                throw e;
             }
         }
-
-        interceptors.add(new RealCallInterceptor());
-
-        RealInterceptorPopChain chain = new RealInterceptorPopChain(interceptors, 0, route);
-        chain.proceed(context, route, resultCode, callback);
     }
 
     @Override public void onReceiver(RouteIntent route, RouterCallback callback) {
-        final Uri uri = route.uri();
-        // Scheme is RouterService name.
-        final String scheme = uri.getScheme();
-        final String path = uri.getPath();
-        final String authority = uri.getAuthority();
+        try {
+            final Uri uri = route.uri();
+            // Scheme is RouterService name.
+            final String scheme = uri.getScheme();
+            final String path = uri.getPath();
+            final String authority = uri.getAuthority();
 
-        List<IInterceptor> interceptors = new ArrayList<>();
-        // Global interceptor.
-        List<IInterceptor> globalInterceptor = RouterRepository.getInterceptors(NAME);
-        if (!isListEmpty(globalInterceptor)){
-            interceptors.addAll(globalInterceptor);
-        }
+            List<IInterceptor> interceptors = new ArrayList<>();
+            // Global interceptor.
+            List<IInterceptor> globalInterceptor = RouterRepository.getInterceptors(NAME);
+            if (!isListEmpty(globalInterceptor)){
+                interceptors.addAll(globalInterceptor);
+            }
 
-        if (!TextUtils.equals(scheme, NAME)){
-            List<IInterceptor> childInterceptor = RouterRepository.getInterceptors(scheme);
-            if (!isListEmpty(childInterceptor)){
-                interceptors.addAll(childInterceptor);
+            if (!TextUtils.equals(scheme, NAME)){
+                List<IInterceptor> childInterceptor = RouterRepository.getInterceptors(scheme);
+                if (!isListEmpty(childInterceptor)){
+                    interceptors.addAll(childInterceptor);
+                }
+            }
+
+            interceptors.add(new RealCallInterceptor());
+
+            RealInterceptorRequestChain chain = new RealInterceptorRequestChain(interceptors, 0, route);
+            chain.proceed(route, callback);
+        } catch (Exception e){
+            if (callback != null){
+                callback.onFailure(route, e);
+            } else {
+                throw e;
             }
         }
-
-        interceptors.add(new RealCallInterceptor());
-
-        RealInterceptorRequestChain chain = new RealInterceptorRequestChain(interceptors, 0, route);
-        chain.proceed(route, callback);
     }
 
     private boolean pushServiceProceed(List<IInterceptor> interceptors,
