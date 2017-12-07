@@ -16,14 +16,14 @@ import im.wangchao.mrouter.annotations.Interceptor;
  */
 @Interceptor(routerName = "example")
 public class ExampleInterceptor implements IInterceptor {
-    @Override public RouteIntent pushInterceptor(Context context, PushChain chain, int requestCode) {
+    @Override public RouteIntent pushInterceptor(Context context, PushChain chain, int requestCode, RouterCallback callback) {
         Log.e("wcwcwc", "ExampleInterceptor: push()");
-        return chain.proceed(context, chain.route(), requestCode);
+        return chain.proceed(context, chain.route(), requestCode, callback);
     }
 
-    @Override public RouteIntent popInterceptor(Context context, PopChain chain, int resultCode) {
+    @Override public RouteIntent popInterceptor(Context context, PopChain chain, int resultCode, RouterCallback callback) {
         Log.e("wcwcwc", "ExampleInterceptor: pop()");
-        return chain.proceed(context, chain.route(), resultCode);
+        return chain.proceed(context, chain.route(), resultCode, callback);
     }
 
     @Override public RouteIntent requestInterceptor(RequestChain chain, RouterCallback callback) {

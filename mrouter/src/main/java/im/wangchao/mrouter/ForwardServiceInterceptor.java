@@ -16,13 +16,13 @@ import android.content.Context;
         mRouterService = routerService;
     }
 
-    @Override public RouteIntent pushInterceptor(Context context, PushChain chain, int requestCode) {
-        mRouterService.push(context, chain.route(), requestCode);
+    @Override public RouteIntent pushInterceptor(Context context, PushChain chain, int requestCode, RouterCallback callback) {
+        mRouterService.push(context, chain.route(), requestCode, callback);
         return null;
     }
 
-    @Override public RouteIntent popInterceptor(Context context, PopChain chain, int resultCode) {
-        mRouterService.pop(context, chain.route(), resultCode);
+    @Override public RouteIntent popInterceptor(Context context, PopChain chain, int resultCode, RouterCallback callback) {
+        mRouterService.pop(context, chain.route(), resultCode, callback);
         return null;
     }
 

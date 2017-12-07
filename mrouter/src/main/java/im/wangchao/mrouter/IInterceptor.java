@@ -16,7 +16,7 @@ public interface IInterceptor {
      * @param chain push 拦截链
      * @param requestCode 请求码
      */
-    RouteIntent pushInterceptor(Context context, PushChain chain, int requestCode);
+    RouteIntent pushInterceptor(Context context, PushChain chain, int requestCode, RouterCallback callback);
 
     /**
      * 拦截 pop 方法
@@ -24,7 +24,7 @@ public interface IInterceptor {
      * @param chain pop 拦截链
      * @param resultCode 返回码
      */
-    RouteIntent popInterceptor(Context context, PopChain chain, int resultCode);
+    RouteIntent popInterceptor(Context context, PopChain chain, int resultCode, RouterCallback callback);
 
     /**
      * 拦截 request 方法
@@ -44,7 +44,7 @@ public interface IInterceptor {
          * @param route RouteIntent
          * @param requestCode 请求码
          */
-        RouteIntent proceed(Context context, RouteIntent route, int requestCode);
+        RouteIntent proceed(Context context, RouteIntent route, int requestCode, RouterCallback callback);
     }
 
     interface PopChain {
@@ -58,7 +58,7 @@ public interface IInterceptor {
          * @param route RouteIntent
          * @param resultCode 返回码
          */
-        RouteIntent proceed(Context context, RouteIntent route, int resultCode);
+        RouteIntent proceed(Context context, RouteIntent route, int resultCode, RouterCallback callback);
     }
 
     interface RequestChain {

@@ -6,6 +6,7 @@ import java.util.List;
 
 import im.wangchao.mrouter.IInterceptor;
 import im.wangchao.mrouter.RouteIntent;
+import im.wangchao.mrouter.RouterCallback;
 
 /**
  * <p>Description  : RealInterceptorChain.</p>
@@ -32,12 +33,12 @@ public final class RealInterceptorPushChain implements IInterceptor.PushChain {
         return mRoute;
     }
 
-    @Override public RouteIntent proceed(Context context, RouteIntent route, int requestCode) {
+    @Override public RouteIntent proceed(Context context, RouteIntent route, int requestCode, RouterCallback callback) {
         if (mIndex >= mSize) throw new AssertionError();
 
         // Call the next interceptor in the chain.
         RealInterceptorPushChain next = new RealInterceptorPushChain(mInterceptors, mIndex + 1, mRoute);
         IInterceptor interceptor = mInterceptors.get(mIndex);
-        return interceptor.pushInterceptor(context, next, requestCode);
+        return interceptor.pushInterceptor(context, next, requestCode, callback);
     }
 }

@@ -6,6 +6,7 @@ import java.util.List;
 
 import im.wangchao.mrouter.IInterceptor;
 import im.wangchao.mrouter.RouteIntent;
+import im.wangchao.mrouter.RouterCallback;
 
 /**
  * <p>Description  : RealInterceptorPopChain.</p>
@@ -32,12 +33,12 @@ public final class RealInterceptorPopChain implements IInterceptor.PopChain {
         return mRoute;
     }
 
-    @Override public RouteIntent proceed(Context context, RouteIntent route, int resultCode) {
+    @Override public RouteIntent proceed(Context context, RouteIntent route, int resultCode, RouterCallback callback) {
         if (mIndex >= mSize) throw new AssertionError();
 
         // Call the next interceptor in the chain.
         RealInterceptorPopChain next = new RealInterceptorPopChain(mInterceptors, mIndex + 1, mRoute);
         IInterceptor interceptor = mInterceptors.get(mIndex);
-        return interceptor.popInterceptor(context, next, resultCode);
+        return interceptor.popInterceptor(context, next, resultCode, callback);
     }
 }

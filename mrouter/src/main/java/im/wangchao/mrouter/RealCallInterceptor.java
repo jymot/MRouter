@@ -19,7 +19,7 @@ import static im.wangchao.mrouter.RouteIntent.FLAG_ACTIVITY_PUSH_AND_POP;
  */
 /*package*/ class RealCallInterceptor implements IInterceptor {
 
-    @Override public RouteIntent pushInterceptor(Context context, PushChain chain, int requestCode) {
+    @Override public RouteIntent pushInterceptor(Context context, PushChain chain, int requestCode, RouterCallback callback) {
         final RouteIntent route = chain.route();
         final Intent intent = route.getPushIntent(context);
 
@@ -35,7 +35,7 @@ import static im.wangchao.mrouter.RouteIntent.FLAG_ACTIVITY_PUSH_AND_POP;
         return null;
     }
 
-    @Override public RouteIntent popInterceptor(Context context, PopChain chain, int resultCode) {
+    @Override public RouteIntent popInterceptor(Context context, PopChain chain, int resultCode, RouterCallback callback) {
         final RouteIntent route = chain.route();
         final Uri uri = route.uri();
         // Scheme is RouterService name.

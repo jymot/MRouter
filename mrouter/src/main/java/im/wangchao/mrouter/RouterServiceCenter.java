@@ -21,7 +21,7 @@ import im.wangchao.mrouter.internal.RealInterceptorRequestChain;
 /*package*/ class RouterServiceCenter implements IRouterService, IProvider{
     static final String NAME = Constants.ROUTER_SERVICE_NAME;
 
-    @Override public void push(Context context, RouteIntent route, int requestCode) {
+    @Override public void push(Context context, RouteIntent route, int requestCode, RouterCallback callback) {
         final Uri uri = route.uri();
         // Scheme is RouterService name.
         final String scheme = uri.getScheme();
@@ -40,7 +40,7 @@ import im.wangchao.mrouter.internal.RealInterceptorRequestChain;
 
         if (!TextUtils.equals(scheme, NAME)){
             // exec other RouterService
-            if (pushServiceProceed(interceptors, scheme, context, route, requestCode)){
+            if (pushServiceProceed(interceptors, scheme, context, route, requestCode, callback)){
                 return;
             }
         }
@@ -48,10 +48,10 @@ import im.wangchao.mrouter.internal.RealInterceptorRequestChain;
         interceptors.add(new RealCallInterceptor());
 
         RealInterceptorPushChain chain = new RealInterceptorPushChain(interceptors, 0, route);
-        chain.proceed(context, route, requestCode);
+        chain.proceed(context, route, requestCode, callback);
     }
 
-    @Override public void pop(Context context, RouteIntent route, int resultCode) {
+    @Override public void pop(Context context, RouteIntent route, int resultCode, RouterCallback callback) {
         final Uri uri = route.uri();
         // Scheme is RouterService name.
         final String scheme = uri.getScheme();
@@ -66,7 +66,7 @@ import im.wangchao.mrouter.internal.RealInterceptorRequestChain;
 
         if (!TextUtils.equals(scheme, NAME)){
             // exec other RouterService
-            if (popServiceProceed(interceptors, scheme, context, route, resultCode)){
+            if (popServiceProceed(interceptors, scheme, context, route, resultCode, callback)){
                 return;
             }
         }
@@ -74,7 +74,7 @@ import im.wangchao.mrouter.internal.RealInterceptorRequestChain;
         interceptors.add(new RealCallInterceptor());
 
         RealInterceptorPopChain chain = new RealInterceptorPopChain(interceptors, 0, route);
-        chain.proceed(context, route, resultCode);
+        chain.proceed(context, route, resultCode, callback);
     }
 
     @Override public void onReceiver(RouteIntent route, RouterCallback callback) {
@@ -104,7 +104,12 @@ import im.wangchao.mrouter.internal.RealInterceptorRequestChain;
         chain.proceed(route, callback);
     }
 
-    private boolean pushServiceProceed(List<IInterceptor> interceptors, String name, Context context, RouteIntent route, int requestCode){
+    private boolean pushServiceProceed(List<IInterceptor> interceptors,
+                                       String name,
+                                       Context context,
+                                       RouteIntent route,
+                                       int requestCode,
+                                       RouterCallback callback){
         IRouterService service = RouterRepository.getRouterService(name);
         if (service == null){
             return false;
@@ -119,11 +124,16 @@ import im.wangchao.mrouter.internal.RealInterceptorRequestChain;
         interceptors.add(new ForwardServiceInterceptor(service));
 
         RealInterceptorPushChain chain = new RealInterceptorPushChain(interceptors, 0, route);
-        chain.proceed(context, route, requestCode);
+        chain.proceed(context, route, requestCode, callback);
         return true;
     }
 
-    private boolean popServiceProceed(List<IInterceptor> interceptors, String name, Context context, RouteIntent route, int resultCode){
+    private boolean popServiceProceed(List<IInterceptor> interceptors,
+                                      String name,
+                                      Context context,
+                                      RouteIntent route,
+                                      int resultCode,
+                                      RouterCallback callback){
         IRouterService service = RouterRepository.getRouterService(name);
         if (service == null){
             return false;
@@ -138,7 +148,7 @@ import im.wangchao.mrouter.internal.RealInterceptorRequestChain;
         interceptors.add(new ForwardServiceInterceptor(service));
 
         RealInterceptorPopChain chain = new RealInterceptorPopChain(interceptors, 0, route);
-        chain.proceed(context, route, resultCode);
+        chain.proceed(context, route, resultCode, callback);
         return true;
     }
 

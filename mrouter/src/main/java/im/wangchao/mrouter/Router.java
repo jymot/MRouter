@@ -27,51 +27,99 @@ public final class Router {
     }
 
     public static void push(Context context, String uri){
-        push(context, uri, null);
+        push(context, uri, null, null);
+    }
+
+    public static void push(Context context, String uri, RouterCallback callback){
+        push(context, uri, null, callback);
     }
 
     public static void push(Context context, String uri, Bundle bundle){
         push(context, uri, bundle, -1);
     }
 
+    public static void push(Context context, String uri, Bundle bundle, RouterCallback callback){
+        push(context, uri, bundle, -1, callback);
+    }
+
     public static void push(Context context, String uri, int flags){
         push(context, uri, null, flags);
+    }
+
+    public static void push(Context context, String uri, int flags, RouterCallback callback){
+        push(context, uri, null, flags, callback);
     }
 
     public static void push(Context context, String uri, Bundle bundle, int flags){
         pushForResult(context, uri, bundle, flags, -1);
     }
 
+    public static void push(Context context, String uri, Bundle bundle, int flags, RouterCallback callback){
+        pushForResult(context, uri, bundle, flags, -1, callback);
+    }
+
     public static void pushForResult(Context context, String uri, int requestCode){
         pushForResult(context, uri, null, -1, requestCode);
+    }
+
+    public static void pushForResult(Context context, String uri, int requestCode, RouterCallback callback){
+        pushForResult(context, uri, null, -1, requestCode, callback);
     }
 
     public static void pushForResult(Context context, String uri, Bundle bundle, int requestCode){
         pushForResult(context, uri, bundle, -1, requestCode);
     }
 
+    public static void pushForResult(Context context, String uri, Bundle bundle, int requestCode, RouterCallback callback){
+        pushForResult(context, uri, bundle, -1, requestCode, callback);
+    }
+
     public static void pushForResult(Context context, String uri, int flags, int requestCode){
         pushForResult(context, uri, null, flags, requestCode);
     }
 
+    public static void pushForResult(Context context, String uri, int flags, int requestCode, RouterCallback callback){
+        pushForResult(context, uri, null, flags, requestCode, callback);
+    }
+
     public static void pushForResult(Context context, String uri, Bundle bundle, int flags, int requestCode){
-        push(context, RouteIntent.of(uri, bundle, flags), requestCode);
+        push(context, RouteIntent.of(uri, bundle, flags), requestCode, null);
+    }
+
+    public static void pushForResult(Context context, String uri, Bundle bundle, int flags, int requestCode, RouterCallback callback){
+        push(context, RouteIntent.of(uri, bundle, flags), requestCode, callback);
     }
 
     public static void pop(Context context){
         pop(context, DEFAULT_POP_URI, null, Activity.RESULT_OK);
     }
 
+    public static void pop(Context context, RouterCallback callback){
+        pop(context, DEFAULT_POP_URI, null, Activity.RESULT_OK, callback);
+    }
+
     public static void pop(Context context, String uri, Bundle bundle){
         pop(context, uri, bundle, Activity.RESULT_OK);
+    }
+
+    public static void pop(Context context, String uri, Bundle bundle, RouterCallback callback){
+        pop(context, uri, bundle, Activity.RESULT_OK, callback);
     }
 
     public static void pop(Context context, Bundle bundle, int resultCode){
         pop(context, DEFAULT_POP_URI, bundle, resultCode);
     }
 
+    public static void pop(Context context, Bundle bundle, int resultCode, RouterCallback callback){
+        pop(context, DEFAULT_POP_URI, bundle, resultCode, callback);
+    }
+
     public static void pop(Context context, String uri, Bundle bundle, int resultCode){
-        pop(context, RouteIntent.of(uri, bundle), resultCode);
+        pop(context, RouteIntent.of(uri, bundle), resultCode, null);
+    }
+
+    public static void pop(Context context, String uri, Bundle bundle, int resultCode, RouterCallback callback){
+        pop(context, RouteIntent.of(uri, bundle), resultCode, callback);
     }
 
     public static void request(String uri){
@@ -97,9 +145,9 @@ public final class Router {
      * @param route RouteIntent
      * @param requestCode 请求码
      */
-    public static void push(Context context, RouteIntent route, int requestCode){
+    public static void push(Context context, RouteIntent route, int requestCode, RouterCallback callback){
         check();
-        RouterRepository.getRouterServiceCenter().push(context, route, requestCode);
+        RouterRepository.getRouterServiceCenter().push(context, route, requestCode, callback);
     }
 
     /**
@@ -109,9 +157,9 @@ public final class Router {
      * @param route RouteIntent
      * @param resultCode 响应码
      */
-    public static void pop(Context context, RouteIntent route, int resultCode){
+    public static void pop(Context context, RouteIntent route, int resultCode, RouterCallback callback){
         check();
-        RouterRepository.getRouterServiceCenter().pop(context, route, resultCode);
+        RouterRepository.getRouterServiceCenter().pop(context, route, resultCode, callback);
     }
 
     /**
