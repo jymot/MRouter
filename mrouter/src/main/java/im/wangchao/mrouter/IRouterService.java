@@ -9,7 +9,7 @@ import android.content.Context;
  * <p>Time         : 下午1:34.</p>
  */
 public interface IRouterService {
-    void push(Context context, RouteIntent route, int requestCode, RouterCallback callback);
+    void push(Context context, RouteIntent route, int requestCode, RouterCallback callback) throws Exception;
 
-    void pop(Context context, RouteIntent route, int resultCode, RouterCallback callback);
+    void pop(Context context, RouteIntent route, int resultCode, RouterCallback callback) throws Exception;
 }

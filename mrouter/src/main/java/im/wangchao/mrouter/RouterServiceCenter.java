@@ -8,9 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import im.wangchao.mrouter.annotations.Constants;
+import im.wangchao.mrouter.exception.TargetClassNotFoundException;
 import im.wangchao.mrouter.internal.RealInterceptorPopChain;
 import im.wangchao.mrouter.internal.RealInterceptorPushChain;
 import im.wangchao.mrouter.internal.RealInterceptorRequestChain;
+
+import static im.wangchao.mrouter.internal.Utils.callbackOrThrow;
 
 /**
  * <p>Description  : RouterServiceCenter.</p>
@@ -21,7 +24,7 @@ import im.wangchao.mrouter.internal.RealInterceptorRequestChain;
 /*package*/ class RouterServiceCenter implements IRouterService, IProvider{
     static final String NAME = Constants.ROUTER_SERVICE_NAME;
 
-    @Override public void push(Context context, RouteIntent route, int requestCode, RouterCallback callback) {
+    @Override public void push(Context context, RouteIntent route, int requestCode, RouterCallback callback) throws Exception{
         try {
             final Uri uri = route.uri();
             // Scheme is RouterService name.
@@ -29,7 +32,11 @@ import im.wangchao.mrouter.internal.RealInterceptorRequestChain;
             final String path = uri.getPath();
 
             // Load target class
-            route = route.newBuilder().targetClass(RouterRepository.getTargetClass(scheme, path)).build();
+            final String targetClass = RouterRepository.getTargetClass(scheme, path);
+            if (TextUtils.isEmpty(targetClass)){
+                throw new TargetClassNotFoundException(route);
+            }
+            route = route.newBuilder().targetClass(targetClass).build();
 
             List<IInterceptor> interceptors = new ArrayList<>();
 
@@ -51,16 +58,12 @@ import im.wangchao.mrouter.internal.RealInterceptorRequestChain;
             RealInterceptorPushChain chain = new RealInterceptorPushChain(interceptors, 0, route);
             chain.proceed(context, route, requestCode, callback);
         } catch (Exception e){
-            if (callback != null){
-                callback.onFailure(route, e);
-            } else {
-                throw e;
-            }
+            callbackOrThrow(route, callback, e);
         }
 
     }
 
-    @Override public void pop(Context context, RouteIntent route, int resultCode, RouterCallback callback) {
+    @Override public void pop(Context context, RouteIntent route, int resultCode, RouterCallback callback) throws Exception{
         try {
             final Uri uri = route.uri();
             // Scheme is RouterService name.
@@ -86,11 +89,7 @@ import im.wangchao.mrouter.internal.RealInterceptorRequestChain;
             RealInterceptorPopChain chain = new RealInterceptorPopChain(interceptors, 0, route);
             chain.proceed(context, route, resultCode, callback);
         } catch (Exception e){
-            if (callback != null){
-                callback.onFailure(route, e);
-            } else {
-                throw e;
-            }
+            callbackOrThrow(route, callback, e);
         }
     }
 
