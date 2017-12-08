@@ -126,9 +126,15 @@ Router.pop(this);
 ```
 #### 3.2 Request
 ```java
-Router.request("two://test", route -> {
-    String result = route.bundle().getString("result");
-    Log.e("wcwcwc", "result =>> " + result);
+Router.request("two://test", new RouterCallback() {
+    @Override public void onSuccess(RouteIntent route) {
+        String result = route.bundle().getString("result");
+        Log.e("wcwcwc", "result =>> " + result);
+    }
+
+    @Override public void onFailure(RouteIntent route, Exception e) {
+
+    }
 });
 ```
 
