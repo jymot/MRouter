@@ -13,8 +13,6 @@ import im.wangchao.mrouter.internal.RealInterceptorPopChain;
 import im.wangchao.mrouter.internal.RealInterceptorPushChain;
 import im.wangchao.mrouter.internal.RealInterceptorRequestChain;
 
-import static im.wangchao.mrouter.internal.Utils.callbackOrThrow;
-
 /**
  * <p>Description  : RouterServiceCenter.</p>
  * <p>Author       : wangchao.</p>
@@ -24,7 +22,7 @@ import static im.wangchao.mrouter.internal.Utils.callbackOrThrow;
 /*package*/ class RouterServiceCenter implements IRouterService, IProvider{
     static final String NAME = Constants.ROUTER_SERVICE_NAME;
 
-    @Override public void push(Context context, RouteIntent route, int requestCode, RouterCallback callback) throws Exception{
+    @Override public void push(Context context, RouteIntent route, int requestCode, RouterCallback callback) {
         try {
             final Uri uri = route.uri();
             // Scheme is RouterService name.
@@ -58,12 +56,16 @@ import static im.wangchao.mrouter.internal.Utils.callbackOrThrow;
             RealInterceptorPushChain chain = new RealInterceptorPushChain(interceptors, 0, route);
             chain.proceed(context, route, requestCode, callback);
         } catch (Exception e){
-            callbackOrThrow(route, callback, e);
+            if (callback != null){
+                callback.onFailure(route, e);
+            } else {
+                throw e;
+            }
         }
 
     }
 
-    @Override public void pop(Context context, RouteIntent route, int resultCode, RouterCallback callback) throws Exception{
+    @Override public void pop(Context context, RouteIntent route, int resultCode, RouterCallback callback) {
         try {
             final Uri uri = route.uri();
             // Scheme is RouterService name.
@@ -89,7 +91,11 @@ import static im.wangchao.mrouter.internal.Utils.callbackOrThrow;
             RealInterceptorPopChain chain = new RealInterceptorPopChain(interceptors, 0, route);
             chain.proceed(context, route, resultCode, callback);
         } catch (Exception e){
-            callbackOrThrow(route, callback, e);
+            if (callback != null){
+                callback.onFailure(route, e);
+            } else {
+                throw e;
+            }
         }
     }
 

@@ -20,7 +20,7 @@ import im.wangchao.mrouter.annotations.RouterService;
 @RouterService("example")
 public class ExampleRouterService implements IRouterService {
 
-    @Override public void push(Context context, RouteIntent route, int requestCode, RouterCallback callback) throws Exception {
+    @Override public void push(Context context, RouteIntent route, int requestCode, RouterCallback callback) {
         Log.e("wcwcwc", "ExampleRouterService : push() -> " + route.targetClass());
         final Intent intent = route.getPushIntent(context);
 
@@ -31,7 +31,7 @@ public class ExampleRouterService implements IRouterService {
         }
     }
 
-    @Override public void pop(Context context, RouteIntent route, int resultCode, RouterCallback callback) throws Exception {
+    @Override public void pop(Context context, RouteIntent route, int resultCode, RouterCallback callback) {
         Log.e("wcwcwc", "Module one service: pop()");
     }
 }
