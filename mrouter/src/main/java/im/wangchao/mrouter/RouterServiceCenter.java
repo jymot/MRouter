@@ -29,13 +29,6 @@ import im.wangchao.mrouter.internal.RealInterceptorRequestChain;
             final String scheme = uri.getScheme();
             final String path = uri.getPath();
 
-            // Load target class
-            final String targetClass = RouterRepository.getTargetClass(scheme, path);
-            if (TextUtils.isEmpty(targetClass)){
-                throw new TargetClassNotFoundException(route);
-            }
-            route = route.newBuilder().targetClass(targetClass).build();
-
             List<IInterceptor> interceptors = new ArrayList<>();
 
             // Global interceptor.
@@ -44,11 +37,19 @@ import im.wangchao.mrouter.internal.RealInterceptorRequestChain;
                 interceptors.addAll(globalInterceptor);
             }
 
+            // Load target class
+            final String targetClass = RouterRepository.getTargetClass(scheme, path);
+            route = route.newBuilder().targetClass(targetClass).build();
+
             if (!TextUtils.equals(scheme, NAME)){
                 // exec other RouterService
                 if (pushServiceProceed(interceptors, scheme, context, route, requestCode, callback)){
                     return;
                 }
+            }
+
+            if (TextUtils.isEmpty(targetClass)){
+                throw new TargetClassNotFoundException(route);
             }
 
             interceptors.add(new RealCallInterceptor());
