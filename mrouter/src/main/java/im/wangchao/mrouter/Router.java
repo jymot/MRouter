@@ -91,11 +91,11 @@ public final class Router {
     }
 
     public static void pop(Context context){
-        pop(context, DEFAULT_POP_URI, null, Activity.RESULT_OK);
+        pop(context, DEFAULT_POP_URI, null, Activity.RESULT_CANCELED);
     }
 
     public static void pop(Context context, RouterCallback callback){
-        pop(context, DEFAULT_POP_URI, null, Activity.RESULT_OK, callback);
+        pop(context, DEFAULT_POP_URI, null, Activity.RESULT_CANCELED, callback);
     }
 
     public static void pop(Context context, String uri, Bundle bundle){

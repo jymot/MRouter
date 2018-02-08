@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.support.v4.app.ActivityCompat;
 import android.text.TextUtils;
 
+import static android.app.Activity.RESULT_CANCELED;
 import static im.wangchao.mrouter.RouteIntent.DEFAULT_POP_URI;
 import static im.wangchao.mrouter.RouteIntent.FLAG_ACTIVITY_PUSH_AND_POP;
 
@@ -48,8 +49,12 @@ import static im.wangchao.mrouter.RouteIntent.FLAG_ACTIVITY_PUSH_AND_POP;
         final Intent intent = route.getPopIntent();
 
         if (TextUtils.equals(uri.toString(), DEFAULT_POP_URI)){
-            ((Activity) context).setResult(resultCode, intent);
-            ((Activity) context).finish();
+            if (resultCode == RESULT_CANCELED){
+                ((Activity) context).onBackPressed();
+            } else {
+                ((Activity) context).setResult(resultCode, intent);
+                ((Activity) context).finish();
+            }
         } else {
             final String targetClass = RouterRepository.getTargetClass(scheme, path);
             if (TextUtils.isEmpty(targetClass)){

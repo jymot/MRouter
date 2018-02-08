@@ -28,7 +28,7 @@ android {
 }
 ...
 dependencies {
-    implementation 'im.wangchao:mrouter:0.1.8'
+    implementation 'im.wangchao:mrouter:0.1.9'
     annotationProcessor 'im.wangchao:mrouter-compiler:0.1.4'
 }
 ```
@@ -47,7 +47,7 @@ android {
 }
 ...
 dependencies {
-    compileOnly 'im.wangchao:mrouter:0.1.8'
+    compileOnly 'im.wangchao:mrouter:0.1.9'
     annotationProcessor 'im.wangchao:mrouter-compiler:0.1.4'
 }
 ```
