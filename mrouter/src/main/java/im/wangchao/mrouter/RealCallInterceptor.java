@@ -5,7 +5,10 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.text.TextUtils;
 
 import static android.app.Activity.RESULT_CANCELED;
@@ -50,7 +53,34 @@ import static im.wangchao.mrouter.RouteIntent.FLAG_ACTIVITY_PUSH_AND_POP;
 
         if (TextUtils.equals(uri.toString(), DEFAULT_POP_URI)){
             if (resultCode == RESULT_CANCELED){
-                ((Activity) context).onBackPressed();
+                final Runnable backPressed = () -> {
+                    android.app.FragmentManager fragmentManager = ((Activity) context).getFragmentManager();
+
+                    if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && fragmentManager.isStateSaved())
+                            || !fragmentManager.popBackStackImmediate()) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            ((Activity) context).finishAfterTransition();
+                        } else {
+                            ((Activity) context).finish();
+                        }
+                    }
+                };
+                if (context instanceof FragmentActivity){
+                    FragmentManager fragmentManager = ((FragmentActivity) context).getSupportFragmentManager();
+                    final boolean isStateSaved = fragmentManager.isStateSaved();
+                    if (isStateSaved && Build.VERSION.SDK_INT <= Build.VERSION_CODES.N_MR1) {
+                        // Older versions will throw an exception from the framework
+                        // FragmentManager.popBackStackImmediate(), so we'll just
+                        // return here. The Activity is likely already on its way out
+                        // since the fragmentManager has already been saved.
+                        return null;
+                    }
+                    if (isStateSaved || !fragmentManager.popBackStackImmediate()) {
+                        backPressed.run();
+                    }
+                } else {
+                    backPressed.run();
+                }
             } else {
                 ((Activity) context).setResult(resultCode, intent);
                 ((Activity) context).finish();
