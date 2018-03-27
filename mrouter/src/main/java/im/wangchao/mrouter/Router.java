@@ -74,19 +74,19 @@ public final class Router {
         pushForResult(context, uri, bundle, -1, requestCode, callback);
     }
 
-    public static void pushForResult(Context context, String uri, int flags, int requestCode){
+    public static void pushForResult(Context context, String uri, int requestCode, int flags){
         pushForResult(context, uri, null, flags, requestCode);
     }
 
-    public static void pushForResult(Context context, String uri, int flags, int requestCode, RouterCallback callback){
+    public static void pushForResult(Context context, String uri, int requestCode, int flags, RouterCallback callback){
         pushForResult(context, uri, null, flags, requestCode, callback);
     }
 
-    public static void pushForResult(Context context, String uri, Bundle bundle, int flags, int requestCode){
+    public static void pushForResult(Context context, String uri, Bundle bundle, int requestCode, int flags){
         push(context, RouteIntent.of(uri, bundle, flags), requestCode, null);
     }
 
-    public static void pushForResult(Context context, String uri, Bundle bundle, int flags, int requestCode, RouterCallback callback){
+    public static void pushForResult(Context context, String uri, Bundle bundle, int requestCode, int flags, RouterCallback callback){
         push(context, RouteIntent.of(uri, bundle, flags), requestCode, callback);
     }
 
@@ -104,6 +104,10 @@ public final class Router {
 
     public static void pop(Context context, String uri, Bundle bundle, RouterCallback callback){
         pop(context, uri, bundle, Activity.RESULT_OK, callback);
+    }
+
+    public static void pop(Context context, String uri, int resultCode){
+        pop(context, uri, null, resultCode);
     }
 
     public static void pop(Context context, Bundle bundle, int resultCode){

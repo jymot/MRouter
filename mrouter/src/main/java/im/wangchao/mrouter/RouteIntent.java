@@ -23,6 +23,7 @@ public final class RouteIntent {
     public static final String DEFAULT_POP_URI = Constants.ROUTER_SERVICE_NAME.concat("://").concat(DEFAULT_POP_PATH);
 
     public static final int FLAG_ACTIVITY_PUSH_AND_POP = -2;
+    public static final int FLAG_CLEAR_CURRENT_TASK_AND_NEW = Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK;
 
     // uri
     private final Uri mUri;
